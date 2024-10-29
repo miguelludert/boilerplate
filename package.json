@@ -1,0 +1,11 @@
+{
+    "name": "ml-express-boilerplate",
+    "private": true,
+    "devDependencies": {},
+    "scripts": {
+        "deploy": "build-frontend && build-express && pnpm --filter cdk run deploy",
+        "build-frontend": "",
+        "build-express": "",
+        "start": ""
+    }
+}
