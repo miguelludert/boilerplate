@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  # s3mock:
+  #   image: adobe/s3mock
+  #   ports:
+  #     - '9090:9090'
+  #   environment:
+  #     - initialBuckets=locla-media-bucket
+  #     - S3MOCK_HTTPS=0
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: dynamodb
+    hostname: dynamodb
+    restart: always
+    volumes:
+      - ./docker-data:/home/dynamodblocal/data
+    ports:
+      - 8000:8000
+    command: '-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/'
+volumes:
+  #s3mock-data:
+  dynamodb-data:

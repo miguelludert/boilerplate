@@ -1,0 +1,23 @@
+{
+  "name": "express",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx watch --env-file='../../.env' ./src/local-server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-serverless-express": "^3.4.0",
+    "express": "^4.21.1",
+    "lambda-express": "^0.1.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "prettier": "^3.3.3",
+    "typescript": "~5.6.2"
+  }
+}
