@@ -1,3 +1,6 @@
-import lambdaExpress from 'lambda-express';
+import awsServerlessExpress from 'aws-serverless-express';
 import { app } from './app';
-export const handler = lambdaExpress.appHandler(app);
+const server = awsServerlessExpress.createServer(app);
+export const handler = (event: any, context: any) => {
+  awsServerlessExpress.proxy(server, event, context);
+};

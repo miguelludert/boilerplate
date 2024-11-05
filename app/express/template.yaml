@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: A sample SAM template for deploying a Lambda function using a Docker image.
+
+Resources:
+  MyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ml-express-boilerplate
+      PackageType: Image
+      ImageUri: ml-express-boilerplate
+      MemorySize: 512
+      Timeout: 60
+      # Environment:
+      #   Variables:
+      #     ENV_VAR_KEY: ENV_VAR_VALUE

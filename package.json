@@ -4,7 +4,7 @@
     "scripts": {
         "deploy": "build-frontend && build-express && pnpm --filter cdk deploy",
         "build-frontend": "pnpm --filter frontend build",
-        "build-express": "pnpm --filter express build",
+        "build-express": "pnpm --filter express build-docker",
         "start-express": "pnpm --filter express start",
         "start-frontend": "pnpm --filter frontend start",
         "start": "",

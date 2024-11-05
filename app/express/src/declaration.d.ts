@@ -1,1 +1,1 @@
-declare module 'lambda-express';
+declare module 'aws-serverless-express';

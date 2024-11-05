@@ -5,6 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx watch --env-file='../../.env' ./src/local-server.ts",
+    "start-build": "node ./.output/lambda-server.js",
+    "start-docker": "sam local invoke",
+    "build-express": "docker build . -t ml-express-boilerplate",
+    "docker": "pnpm build-express --no-cache && pnpm start-docker",
+    "build": "npx tsc",
+    "zip": "pnpm build && ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,11 +18,11 @@
   "license": "ISC",
   "dependencies": {
     "aws-serverless-express": "^3.4.0",
-    "express": "^4.21.1",
-    "lambda-express": "^0.1.5"
+    "express": "^4.21.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
+    "commander": "^12.1.0",
     "prettier": "^3.3.3",
     "typescript": "~5.6.2"
   }
