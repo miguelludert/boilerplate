@@ -53,7 +53,7 @@ export class BoilerplateStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
     });
-    const frontendBuildPath = join(__dirname, '../../express/.build');
+    const frontendBuildPath = join(__dirname, '../../../frontend/dist');
     const frontendSourceDirectory = existsSync(frontendBuildPath)
       ? frontendBuildPath
       : join(__dirname, '../../empty-bucket-contents');
