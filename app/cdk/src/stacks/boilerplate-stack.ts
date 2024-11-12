@@ -33,6 +33,7 @@ export class BoilerplateStack extends cdk.Stack {
       userPoolName: namingConvention('user-pool'),
       signInAliases: { email: true },
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      selfSignUpEnabled: true,
     });
 
     const userPoolClient = new cognito.UserPoolClient(
@@ -41,7 +42,7 @@ export class BoilerplateStack extends cdk.Stack {
       {
         userPoolClientName: namingConvention('user-pool-client'),
         userPool,
-        generateSecret: true,
+        generateSecret: false,
       }
     );
 
@@ -79,9 +80,11 @@ export class BoilerplateStack extends cdk.Stack {
           assetName: namingConvention('express-function'),
         }),
         environment: {
-          USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
-          USER_POOL_CLIENT_SECRET:
-            userPoolClient.userPoolClientSecret.unsafeUnwrap(),
+          COGNITO_USER_POOL_ID: userPool.userPoolId,
+          COGNITO_CLIENT_ID: userPoolClient.userPoolClientId,
+          // COGNITO_CLIENT_SECRET:
+          // USER_POOL_CLIENT_SECRET:
+          //   userPoolClient.userPoolClientSecret.unsafeUnwrap(),
         },
       }
     );
@@ -132,9 +135,15 @@ export class BoilerplateStack extends cdk.Stack {
     new cdk.CfnOutput(this, namingConvention('lambdaFunctionUrl'), {
       value: lambdaFunctionUrl.url,
     });
+    new cdk.CfnOutput(this, namingConvention('userPoolId'), {
+      value: userPool.userPoolId,
+    });
     new cdk.CfnOutput(this, namingConvention('userPoolClientId'), {
       value: userPoolClient.userPoolClientId,
     });
+    // new cdk.CfnOutput(this, namingConvention('userPoolClientSecret'), {
+    //   value: userPoolClient.userPoolClientSecret.unsafeUnwrap(),
+    // });
   }
 
   getURLDomain(lambdaUrl: lambda.FunctionUrl) {

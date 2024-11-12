@@ -18,7 +18,9 @@
   "license": "ISC",
   "dependencies": {
     "aws-serverless-express": "^3.4.0",
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "react-hook-form": "^7.53.1",
+    "yup": "^1.4.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
