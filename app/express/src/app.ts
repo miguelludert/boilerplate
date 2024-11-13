@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { userRouter } from './routers/users';
+import { mediaRouter } from './routers/media';
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.get('/health', (req: Request, res: Response<any>) => {
 // add jwt middle ware
 
 app.use('/users', userRouter);
+app.use('/media', mediaRouter);
 
 app.use((req: Request, res: Response<any>) => {
   console.info(req);

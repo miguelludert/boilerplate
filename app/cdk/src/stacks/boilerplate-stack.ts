@@ -3,25 +3,21 @@ import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfrontOrigins from 'aws-cdk-lib/aws-cloudfront-origins';
-import * as cognito from 'aws-cdk-lib/aws-cognito';
-import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
-import * as apigatewayv2Integrations from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import { NamingConventionProps } from '../types';
+import { Directories, NamingConventionProps } from '../types';
 import {
   BucketDeployment,
   Source as S3DeploySource,
 } from 'aws-cdk-lib/aws-s3-deployment';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import {
-  NodejsFunction,
-  NodejsFunctionProps,
-  SourceMapMode,
-} from 'aws-cdk-lib/aws-lambda-nodejs';
+import { UserStack } from './user-stack';
 
-export type BoilerplateStackProps = cdk.StackProps & NamingConventionProps;
+export type BoilerplateStackProps = cdk.StackProps &
+  NamingConventionProps &
+  Directories;
 
 export class BoilerplateStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BoilerplateStackProps) {
@@ -29,21 +25,10 @@ export class BoilerplateStack extends cdk.Stack {
 
     const { namingConvention } = props;
 
-    const userPool = new cognito.UserPool(this, namingConvention('user-pool'), {
-      userPoolName: namingConvention('user-pool'),
-      signInAliases: { email: true },
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      selfSignUpEnabled: true,
-    });
-
-    const userPoolClient = new cognito.UserPoolClient(
+    const userStack = new UserStack(
       this,
-      namingConvention('user-pool-client'),
-      {
-        userPoolClientName: namingConvention('user-pool-client'),
-        userPool,
-        generateSecret: false,
-      }
+      namingConvention('user-stack'),
+      props
     );
 
     const bucket = new s3.Bucket(this, namingConvention('site-bucket'), {
@@ -67,6 +52,22 @@ export class BoilerplateStack extends cdk.Stack {
         destinationBucket: bucket,
       }
     );
+    const mediaBucket = new s3.Bucket(this, namingConvention('media-bucket'), {
+      bucketName: namingConvention('media-bucket'),
+    });
+    const mediaTable = new dynamodb.Table(
+      this,
+      namingConvention('media-table'),
+      {
+        tableName: namingConvention('media-table'),
+        partitionKey: {
+          name: 'table#tableId#usage',
+          type: dynamodb.AttributeType.STRING,
+        },
+        sortKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      }
+    );
 
     const lambdaFunctionRootDir = join(__dirname, '../../../express/');
     console.info(lambdaFunctionRootDir);
@@ -80,8 +81,8 @@ export class BoilerplateStack extends cdk.Stack {
           assetName: namingConvention('express-function'),
         }),
         environment: {
-          COGNITO_USER_POOL_ID: userPool.userPoolId,
-          COGNITO_CLIENT_ID: userPoolClient.userPoolClientId,
+          COGNITO_USER_POOL_ID: userStack.getUserPoolId(),
+          COGNITO_CLIENT_ID: userStack.getUserPoolClientId(),
           // COGNITO_CLIENT_SECRET:
           // USER_POOL_CLIENT_SECRET:
           //   userPoolClient.userPoolClientSecret.unsafeUnwrap(),
@@ -92,15 +93,10 @@ export class BoilerplateStack extends cdk.Stack {
       authType: lambda.FunctionUrlAuthType.NONE,
     });
 
-    const usersTable = new dynamodb.Table(
-      this,
-      namingConvention('users-table'),
-      {
-        partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
-        removalPolicy: cdk.RemovalPolicy.DESTROY,
-      }
-    );
-    usersTable.grantReadWriteData(lambdaFunction);
+    // function grants
+    mediaBucket.grantReadWrite(lambdaFunction);
+    mediaTable.grantReadWriteData(lambdaFunction);
+
     const originAccessControl = new cloudfront.S3OriginAccessControl(
       this,
       namingConvention('distribution-oac'),
@@ -136,14 +132,11 @@ export class BoilerplateStack extends cdk.Stack {
       value: lambdaFunctionUrl.url,
     });
     new cdk.CfnOutput(this, namingConvention('userPoolId'), {
-      value: userPool.userPoolId,
+      value: userStack.getUserPoolId(),
     });
     new cdk.CfnOutput(this, namingConvention('userPoolClientId'), {
-      value: userPoolClient.userPoolClientId,
+      value: userStack.getUserPoolClientId(),
     });
-    // new cdk.CfnOutput(this, namingConvention('userPoolClientSecret'), {
-    //   value: userPoolClient.userPoolClientSecret.unsafeUnwrap(),
-    // });
   }
 
   getURLDomain(lambdaUrl: lambda.FunctionUrl) {
