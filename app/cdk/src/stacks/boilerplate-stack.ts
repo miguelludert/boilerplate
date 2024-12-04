@@ -59,15 +59,22 @@ export class BoilerplateStack extends cdk.Stack {
       this,
       namingConvention('media-table'),
       {
-        tableName: namingConvention('media-table'),
         partitionKey: {
-          name: 'table#tableId#usage',
+          name: 'mediaId',
           type: dynamodb.AttributeType.STRING,
         },
-        sortKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+        tableName: namingConvention('media-table'),
         removalPolicy: cdk.RemovalPolicy.DESTROY,
       }
     );
+    mediaTable.addGlobalSecondaryIndex({
+      indexName: 'bySource',
+      partitionKey: {
+        name: 'sourceTableName#sourceId#usage',
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: { name: 'mediaId', type: dynamodb.AttributeType.STRING },
+    });
 
     const lambdaFunctionRootDir = join(__dirname, '../../../express/');
     console.info(lambdaFunctionRootDir);

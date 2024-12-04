@@ -4,6 +4,7 @@ import { Col, Row } from 'reactstrap';
 import { useLogout, useUser } from '../providers/AuthProvider';
 import { Button } from '../components/Button';
 import { routes } from '../routes';
+import { UserAvatar } from './UserAvatar';
 
 const LayoutContainer = styled('div', {
   position: 'fixed',
@@ -52,7 +53,7 @@ export const Layout = ({ children }: { children: any }) => {
         <Col className='d-flex justify-content-end'>
           <Link to='/profile'>
             Welcome {displayName}
-            <img alt='avatar' src='/icons/user.svg' />
+            <UserAvatar height='24px' width='24px' />
           </Link>
           <Button color='secondary' onClick={logout}>
             <img alt='logout' src='/icons/logout.svg' />

@@ -1,7 +1,11 @@
 import { app } from './app';
 
-(async () => {
-  const port = 3000;
-  await app.listen(port);
-  console.info(`Express listening on port ${port}`);
-})();
+const port = process.env.EXPRESS_PORT || 3000;
+app
+  .on('error', (error) => {
+    console.error(error);
+    throw error;
+  })
+  .listen(port, () => {
+    console.info(`Express listening on port ${port}`);
+  });

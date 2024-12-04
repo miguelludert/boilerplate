@@ -1,0 +1,2 @@
+* By default all names for AWS resources, except those that force their own naming conventions, are kebabCase with a suffix noting the resourrce tyoe.  e.g. boilerplate-local-media-bucket, boilerplate-local-media-table.
+* No default exports, only named exports.  Functional programming when possible.
