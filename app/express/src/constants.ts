@@ -24,6 +24,7 @@ export const getAwsAccessKeyId = () => process.env.AWS_ACCESS_ID || '';
 export const getAwsSecretAccessKey = () => process.env.AWS_ACCESS_SECRET || '';
 export const getCognitoUserPoolId = () =>
   process.env.COGNITO_USER_POOL_ID || '';
+export const getCognitoClientId = () => process.env.COGNITO_CLIENT_ID || '';
 export const getContactFormRecipient = () =>
   process.env.CONTACT_FORM_RECIPIENT || '';
 export const getContactFormSource = () => process.env.CONTACT_FORM_SOURCE || '';

@@ -62,6 +62,10 @@ export class UserStack extends NestedStack {
         userPoolClientName: namingConvention('user-pool-client'),
         userPool,
         generateSecret: false,
+        authFlows: {
+          adminUserPassword: true,
+          userPassword: true,
+        },
       }
     );
 

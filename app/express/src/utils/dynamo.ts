@@ -1,9 +1,7 @@
 import {
   DynamoDBClient,
-  GetItemCommand,
   PutItemCommand,
   UpdateItemCommand,
-  ScanCommand,
   QueryCommand,
   BatchWriteItemCommand,
   DeleteItemCommand,
@@ -214,3 +212,46 @@ export async function deleteItem(
     throw new Error('Failed to delete item');
   }
 }
+
+export interface DynamoPatchInput {}
+
+export const patchItem = async (
+  tableName: DynamoTableName,
+  key: Record<string, any>,
+  updateData: Record<string, any>
+): Promise<void> => {
+  const dynamoDbClient = getDynamoDbClient();
+
+  try {
+    // Construct the UpdateExpression and ExpressionAttributeValues
+    const updateExpressionParts: string[] = [];
+    const expressionAttributeValues: Record<string, any> = {};
+    const expressionAttributeNames: Record<string, string> = {};
+
+    for (const [field, value] of Object.entries(updateData)) {
+      const attributeName = `#${field}`;
+      const attributeValue = `:${field}`;
+      updateExpressionParts.push(`${attributeName} = ${attributeValue}`);
+      expressionAttributeValues[attributeValue] = value;
+      expressionAttributeNames[attributeName] = field;
+    }
+
+    const updateExpression = `SET ${updateExpressionParts.join(', ')}`;
+
+    // Execute the UpdateItemCommand
+    await dynamoDbClient.send(
+      new UpdateItemCommand({
+        TableName: tableName,
+        Key: marshall(key),
+        UpdateExpression: updateExpression,
+        ExpressionAttributeValues: marshall(expressionAttributeValues),
+        ExpressionAttributeNames: expressionAttributeNames,
+      })
+    );
+
+    console.log('Record patched successfully');
+  } catch (error) {
+    console.error('Error patching record in DynamoDB:', error);
+    throw new Error('Failed to patch record in DynamoDB');
+  }
+};

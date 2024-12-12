@@ -13,6 +13,7 @@ import {
   mediaSourceName,
   MediaUsage,
   sendAvatarToResponse,
+  updateUserEmailAndPassword,
 } from '../services/user';
 import { createUploadUrl } from '../utils/s3';
 
@@ -26,15 +27,28 @@ export const userRouter = Router();
 // get current user
 userRouter.get('/', async (req: AppRequest, res: any) => {
   const user = await getUser(req.user.sub);
-  res.json(user);
+  res.json({ ...user, email: req.user.email });
 });
 
 // edit current user
 userRouter.post('/', async (req: AppRequest, res: any) => {
   const body = req.body as EditableUserFields;
-  const id = req.user.sub;
-  await editUser(id, body);
-  res.json('OK').send();
+  const userId = req.user.sub;
+  await editUser({ ...body, userId });
+  res.json('OK');
+});
+
+// edit current user
+userRouter.post('/security', async (req: AppRequest, res: any) => {
+  const { oldPassword, newPassword, newEmailAddress } = req.body;
+  const userId = req.user.email;
+  await updateUserEmailAndPassword(
+    userId,
+    oldPassword,
+    newPassword,
+    newEmailAddress
+  );
+  res.json('OK');
 });
 
 // get current user's avatar

@@ -40,12 +40,3 @@ export function validateJwt(req: Request, res: Response, next: NextFunction) {
     }
   );
 }
-
-export const changeUserEmail = () => {
-  // send email confirming email change
-  // once email is received, the password is changed
-};
-
-export const changeUserPassword = () => {
-  //
-};

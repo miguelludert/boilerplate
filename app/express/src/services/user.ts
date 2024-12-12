@@ -5,10 +5,18 @@ import {
   getAllMediaBySource,
   sendMediaToResponse,
 } from './media';
-import { getMediaBucketName } from '../constants';
+import {
+  getCognitoClientId,
+  getCognitoUserPoolId,
+  getMediaBucketName,
+  getUsersTableName,
+} from '../constants';
 import { getObjectAsBuffer } from '../utils/s3';
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { patchItem, putItem, queryByKey } from '../utils/dynamo';
+import {
+  updateCognitoUserEmailAndPassword,
+  verifyUserPassword,
+} from '../utils/cognito';
 
 export interface AppUser {
   userId: string;
@@ -19,25 +27,53 @@ export enum MediaUsage {
   avatar = 'avatar',
 }
 
-export const editUser = (userId: string, appUser: Omit<AppUser, 'userId'>) => {
-  // change emailin cognito
-  // change data in dynamo
+export const editUser = async (appUser: AppUser) => {
+  const [user] = await queryByKey<AppUser>(getUsersTableName(), {
+    name: 'userId',
+    value: appUser.userId,
+  });
+  const updatedUser = { ...user, ...appUser };
+  await putItem(getUsersTableName(), updatedUser);
 };
 
-export const getUser = (userId: string): AppUser => {
-  return {
-    userId,
-  } as AppUser;
+export const getUser = async (userId: string) => {
+  const [user] = await queryByKey<AppUser>(getUsersTableName(), {
+    name: 'userId',
+    value: userId,
+  });
+  return user as AppUser;
 };
 
-export const changeSecurity = (
+export const updateUserEmailAndPassword = async (
   userId: string,
   oldPassword: string,
   newPassword?: string,
-  email?: string
+  newEmail?: string
 ) => {
-  // check password
-  // update password
+  const verified = await verifyUserPassword({
+    userPoolId: getCognitoUserPoolId(),
+    clientId: getCognitoClientId(),
+    username: userId,
+    password: oldPassword,
+  });
+  if (!verified) {
+    throw Error('Not Authorized');
+  }
+  await updateCognitoUserEmailAndPassword({
+    userPoolId: getCognitoUserPoolId(),
+    username: userId,
+    newEmail,
+    newPassword,
+  });
+  if (newEmail) {
+    await patchItem(
+      getUsersTableName(),
+      { userId },
+      {
+        email: newEmail,
+      }
+    );
+  }
 };
 
 export const sendAvatarToResponse = async (userId: string, res: Response) => {

@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.687.0",
     "@aws-sdk/client-dynamodb": "^3.687.0",
     "@aws-sdk/client-s3": "^3.696.0",
     "@aws-sdk/client-ses": "^3.699.0",

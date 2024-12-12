@@ -1,7 +1,7 @@
 import { styled } from '@stitches/react';
 // import { ImageWithFallback } from './ImageWithFallback';
 // import { getApiEndoint } from '../constants';
-import { useUser } from '../providers/AuthProvider';
+import { useCurrentUser } from '../providers/AuthProvider';
 
 export interface UserAvatarProps {
   height: string;
@@ -13,6 +13,6 @@ export const UserAvatar = ({ height, width, ...props }: UserAvatarProps) => {
     height,
     width,
   });
-  const { avatar } = useUser();
+  const { avatar } = useCurrentUser();
   return <Avatar src={avatar} {...props} />;
 };

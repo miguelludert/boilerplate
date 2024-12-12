@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { styled } from '@stitches/react';
 import { Col, Row } from 'reactstrap';
-import { useLogout, useUser } from '../providers/AuthProvider';
+import { useCurrentUser } from '../providers/AuthProvider';
 import { Button } from '../components/Button';
 import { routes } from '../routes';
 import { UserAvatar } from './UserAvatar';
@@ -41,7 +41,7 @@ const Logo = styled('div', {
 });
 
 export const Layout = ({ children }: { children: any }) => {
-  const { logout, displayName } = useUser();
+  const { logout, displayName } = useCurrentUser();
   return (
     <LayoutContainer>
       <Header className='d-flex justify-content-between p-1'>

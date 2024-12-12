@@ -2,17 +2,11 @@ import { Amplify, ResourcesConfig } from 'aws-amplify';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
-import { AuthUser } from 'aws-amplify/auth';
+import { createContext, useContext } from 'react';
 import axios from 'axios';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { getApiEndoint } from '../constants';
+import { fetchImageAsDataUrl } from '../utils/fetchImageAsDataUrl';
 
 axios.interceptors.request.use(async (config) => {
   const token = await getJwtToken();
@@ -21,19 +15,29 @@ axios.interceptors.request.use(async (config) => {
 });
 
 export interface AppUserData {
-  id: string;
-  avatar?: string;
+  userId: string;
   email: string;
   displayName: string;
-  logout?: () => void;
-  reloadAvatar: () => void;
+  firstName: string;
+  lastName: string;
 }
 
-export interface AuthContextType {
+export interface AppUser {
+  userData: AppUserData;
+  logout?: () => void;
+  refetchUser: () => Promise<unknown>;
+  saveUserData: (data: AppUserData) => Promise<void>;
+  saveEmailAndPassword: (args: {
+    oldPassword: string;
+    email?: string;
+    newPassword?: string;
+  }) => Promise<void>;
   signOut?: () => void;
-  user?: AuthUser;
+
+  // avatar
   avatar?: string;
-  reloadAvatar: () => void;
+  reloadAvatar: () => Promise<void>;
+  uploadAvatar: (args: { file: File }) => Promise<void>;
 }
 
 const {
@@ -51,7 +55,7 @@ const awsConfig: ResourcesConfig = {
 };
 
 Amplify.configure(awsConfig);
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const AuthContext = createContext<AppUser>({} as AppUser);
 
 const setCookie = (name: string, value: string, days?: number): void => {
   let expires = '';
@@ -75,82 +79,150 @@ async function getJwtToken() {
   }
 }
 
-export const useUser = () => {
-  const { signOut, user, avatar, reloadAvatar } = useContext(AuthContext);
-  const userQueryFunction = async () => {
-    const { data } = await axios(getApiEndoint('/user'));
-    return data as AppUserData;
-  };
-  const { data } = useQuery({
-    queryKey: ['current-user'],
-    queryFn: userQueryFunction,
-  });
-  return {
-    ...data,
-    logout: signOut,
-    id: user!.username,
-    avatar,
-    reloadAvatar,
-  } as AppUserData;
+const getUserQueryFn = async () => {
+  const { data } = await axios(getApiEndoint('/user'));
+  return data as AppUserData;
 };
 
-/**
- * Fetches an image from the given URL and converts it into a Data URL.
- * @param imageUrl - The URL of the image to fetch.
- * @returns A promise that resolves to the Data URL string.
- */
-const fetchImageAsDataUrl = async (imageUrl: string): Promise<string> => {
+const saveDataMutationFn = async (data: AppUserData) => {
   try {
-    // Fetch the image as a binary blob
-    const response = await axios.get(imageUrl, {
-      responseType: 'blob', // Fetch the image as a Blob
-    });
-
-    const blob = response.data;
-
-    // Convert the blob to a Data URL using FileReader
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (reader.result) {
-          resolve(reader.result.toString());
-        } else {
-          reject(new Error('Failed to convert blob to Data URL'));
-        }
-      };
-      reader.onerror = () => reject(new Error('FileReader failed'));
-      reader.readAsDataURL(blob);
-    });
+    await axios.post(getApiEndoint('/user'), data);
   } catch (error) {
-    console.error('Error fetching image:', error);
-    throw new Error('Failed to fetch the image');
+    console.error('Error posting user data:', error);
+    throw error;
   }
 };
 
-export function AuthProvider({ children }: { children: React.ReactElement }) {
-  const userAvatarUrl = getApiEndoint('/user/avatar');
-  const [avatar, setAvatar] = useState<string | undefined>('/icons/user.svg');
-  const reloadAvatar = useCallback(async () => {
-    try {
-      const dataUrl = await fetchImageAsDataUrl(userAvatarUrl);
-      setAvatar(dataUrl);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [setAvatar, userAvatarUrl]);
-  useEffect(() => {
-    reloadAvatar();
-  }, [reloadAvatar]);
+const saveEmailAndPasswordMutationFn = async ({
+  oldPassword,
+  email,
+  newPassword,
+}: {
+  oldPassword: string;
+  email?: string;
+  newPassword?: string;
+}) => {
+  try {
+    await axios.post(getApiEndoint('/user/security'), {
+      oldPassword,
+      email,
+      newPassword,
+    });
+  } catch (error) {
+    console.error('Error posting user data:', error);
+    throw error;
+  }
+};
+
+const uploadAvatarMutationFn = async ({ file }: { file: File }) => {
+  const response = await axios.post(getApiEndoint('/user/avatar'), {
+    fileName: file.name,
+    fileType: file.type,
+  });
+  const uploadUrl = response.data.uploadUrl;
+  await axios.put(uploadUrl, file, {
+    headers: {
+      'Content-Type': file.type,
+    },
+  });
+};
+
+export const useCurrentUser = () => {
+  return useContext(AuthContext);
+};
+
+const fetchAvatarMutationFn = async () => {
+  try {
+    return await fetchImageAsDataUrl(getApiEndoint('/user/avatar'));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export function AuthProviderContent({
+  signOut,
+  children,
+}: {
+  signOut?: () => void;
+  children: React.ReactElement;
+}) {
+  // avatar
+  const { data: avatarDataUrl, refetch: reloadAvatarQuery } = useQuery({
+    queryKey: ['current-user-avatar'],
+    queryFn: fetchAvatarMutationFn,
+  });
+  const avatar = avatarDataUrl ? avatarDataUrl : '/icons/user.svg';
+  const reloadAvatar = async () => {
+    await reloadAvatarQuery();
+  };
+
+  // get user data
+  const { data: userData, refetch: refetchUserQuery } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: getUserQueryFn,
+  });
+  const refetchUser = async () => {
+    await refetchUserQuery();
+  };
+
+  // save user data
+  const { mutateAsync: saveDataMutateAsync } = useMutation({
+    mutationFn: saveDataMutationFn,
+  });
+  const saveData = async (data: AppUserData) => {
+    await saveDataMutateAsync(data);
+    await refetchUser();
+  };
+
+  // save email password
+  const { mutateAsync: saveEmailAndPasswordMutateAsync } = useMutation({
+    mutationFn: saveEmailAndPasswordMutationFn,
+  });
+  const saveEmailAndPassword = async (args: {
+    oldPassword: string;
+    email?: string;
+    newPassword?: string;
+  }) => {
+    await saveEmailAndPasswordMutateAsync(args);
+  };
+
+  // up0load avatar
+  const { mutateAsync: uploadAvatarMutateAsync } = useMutation({
+    mutationFn: uploadAvatarMutationFn,
+  });
+  const uploadAvatar = async (args: { file: File }) => {
+    await uploadAvatarMutateAsync(args);
+    await reloadAvatar();
+  };
 
   return (
-    <Authenticator>
-      {({ signOut, user }) => {
-        return (
-          <AuthContext.Provider value={{ signOut, user, avatar, reloadAvatar }}>
-            {children}
-          </AuthContext.Provider>
-        );
+    <AuthContext.Provider
+      value={{
+        userData: userData ?? ({} as AppUserData),
+        saveUserData: saveData,
+        saveEmailAndPassword,
+        refetchUser,
+        signOut,
+
+        // avatar
+        avatar,
+        reloadAvatar: async () => {
+          await reloadAvatar();
+        },
+        uploadAvatar,
       }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function AuthProvider({ children }: { children: React.ReactElement }) {
+  return (
+    <Authenticator>
+      {({ ...props }) => (
+        <AuthProviderContent {...props}>{children}</AuthProviderContent>
+      )}
     </Authenticator>
   );
 }

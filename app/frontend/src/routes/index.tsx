@@ -1,6 +1,6 @@
 import { Home } from '../pages/Home';
-import { Profile } from '../pages/Profile';
 import { RouteObject } from 'react-router-dom';
+import { ProfilePage } from '../pages/ProfilePage';
 
 export type AppRoute = RouteObject & {
   label?: string;
@@ -14,7 +14,7 @@ export const routes: AppRoute[] = [
   },
   {
     path: '/profile',
-    element: <Profile />,
+    element: <ProfilePage />,
     label: 'Profile',
   },
 ];
