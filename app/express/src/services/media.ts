@@ -16,6 +16,7 @@ import {
   deleteBatchObjects,
   deleteOneObject,
   getObjectAsBuffer,
+  listObjectsWithPrefix,
   sendObjectStreamToResponse,
   writeObjectToS3,
 } from '../utils/s3';
@@ -25,9 +26,10 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
 import { createHashFromObject } from '../utils/create-hash-from-object';
+import { ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 
 export interface MediaSourcePartitionKey {
-  sourceTableName: string;
+  sourceName: string;
   sourceId: string;
   usage?: string;
 }
@@ -52,8 +54,25 @@ export interface ImageResizeProps {
   width?: number;
 }
 
+const getMediaS3Key = (
+  { sourceName, sourceId, usage }: MediaSourcePartitionKey,
+  mediaId?: string,
+  name?: string
+) => {
+  const gather = [sourceName, sourceId];
+  const rest = [usage, mediaId, name];
+  for (let next of rest) {
+    if (!next) {
+      continue;
+    }
+    gather.push(next);
+  }
+  const result = gather.join('/');
+  return result;
+};
+
 export const getAllMediaBySource = async ({
-  sourceTableName,
+  sourceName,
   sourceId,
   usage,
 }: MediaSourcePartitionKey) => {
@@ -62,8 +81,8 @@ export const getAllMediaBySource = async ({
     {
       name: getMediaBySourcePartitionKey(),
       value: (usage
-        ? [sourceTableName, sourceId, usage]
-        : [sourceTableName, sourceId]
+        ? [sourceName, sourceId, usage]
+        : [sourceName, sourceId]
       ).join('#'),
       operator: usage ? 'equals' : 'begins_with',
     },
@@ -75,57 +94,56 @@ export const getAllMediaBySource = async ({
 
 export const addMediaToSource = async (
   userId: string,
-  { sourceTableName, sourceId, usage }: MediaSourcePartitionKey,
+  partitionKey: MediaSourcePartitionKey,
   fileName: string,
   fileType: string
 ) => {
   const mediaId = uuid();
+  const { sourceName, sourceId, usage } = partitionKey;
   await putItem(getMediaTableName(), {
-    [getMediaBySourcePartitionKey()]: [sourceTableName, sourceId, usage].join(
-      '#'
-    ),
+    [getMediaBySourcePartitionKey()]: [sourceName, sourceId, usage].join('#'),
     mediaId,
-    sourceTableName,
+    sourceName,
     sourceId,
     usage,
     status: 'pending',
     dateCreated: new Date().toISOString(),
     userId,
   });
-  const uploadUrl = await createUploadUrl(getMediaBucketName(), mediaId, {
-    mediaId,
-    sourceTableName,
-    sourceId,
-    usage,
-    dateCreated: new Date().toISOString(),
-    userId,
-  });
+  const uploadUrl = await createUploadUrl(
+    getMediaBucketName(),
+    getMediaS3Key(partitionKey, mediaId, 'original'),
+    {
+      mediaId,
+      sourceName,
+      sourceId,
+      usage,
+      dateCreated: new Date().toISOString(),
+      userId,
+    }
+  );
   return {
     mediaId,
     uploadUrl,
   };
 };
 
-export const deleteAllMediaForSource = async ({
-  sourceTableName,
-  sourceId,
-  usage,
-}: MediaSourcePartitionKey) => {
-  const items = await getAllMediaBySource({
-    sourceTableName,
-    sourceId,
-    usage,
-  });
+export const deleteAllMediaForSource = async (
+  partitionKey: MediaSourcePartitionKey
+) => {
+  const items = await getAllMediaBySource(partitionKey);
   const deleteItemsPromise = deleteBatchItems(
     getMediaTableName(),
     items.map((m) => ({
       mediaId: m.mediaId,
     }))
   );
-  const deleteObjectsPromise = deleteBatchObjects(
+  const s3Keys = await listObjectsWithPrefix(
     getMediaBucketName(),
-    items.map((m) => m.mediaId)
+    getMediaS3Key(partitionKey)
   );
+  const deleteObjectsPromise = deleteBatchObjects(getMediaBucketName(), s3Keys);
+
   await deleteItemsPromise;
   await deleteObjectsPromise;
 };
@@ -145,12 +163,17 @@ export const sendMediaToResponse = async (mediaId: string, res: Response) => {
 };
 
 export const resizeImage = async (
+  partitionKey: MediaSourcePartitionKey,
   mediaId: string,
   resizeProps: ImageResizeProps
 ) => {
   const { format, quality, sizing, center, height, width } = resizeProps;
   const resizeHash = createHashFromObject(resizeProps);
-  const resizeKey = `${mediaId}.${resizeHash}`;
+  const resizeKey = getMediaS3Key(
+    partitionKey,
+    mediaId,
+    `resize.${resizeHash}`
+  );
   const resizeBufferResponse = await getObjectAsBuffer(
     getMediaBucketName(),
     resizeKey
@@ -159,9 +182,13 @@ export const resizeImage = async (
     return resizeBufferResponse;
   }
 
-  const originalBuffer = await getObjectAsBuffer(getMediaBucketName(), mediaId);
+  const originalBuffer = await getObjectAsBuffer(
+    getMediaBucketName(),
+    getMediaS3Key(partitionKey, mediaId, 'original')
+  );
   if (!originalBuffer) {
-    throw new Error(`Media ${mediaId} either does not exist or is corrupted.`);
+    console.info(`Media ${mediaId} either does not exist or is corrupted.`);
+    return null;
   }
 
   let sharpInstance = sharp(originalBuffer.buffer);
@@ -218,7 +245,7 @@ export const resizeImage = async (
   });
 
   const buffer = await sharpInstance.toBuffer();
-  const contentType = `imgage/${outputFormat.toString()}`;
+  const contentType = `image/${outputFormat.toString()}`;
   await writeObjectToS3(getMediaBucketName(), resizeKey, buffer, contentType);
 
   // Return the processed image as a buffer

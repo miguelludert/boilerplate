@@ -2,6 +2,7 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -38,19 +39,15 @@ const getS3Client = () => {
 export const writeObjectToS3 = async (
   bucket: string,
   key: string,
-  data: any,
+  data: Buffer,
   contentType: string = 'application/json'
 ): Promise<void> => {
   try {
     const s3Client = getS3Client();
-
-    // Convert data to a string or buffer
-    const body = typeof data === 'object' ? JSON.stringify(data) : data;
-
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      Body: body,
+      Body: data,
       ContentType: contentType,
     });
 
@@ -226,6 +223,52 @@ export const getObjectAsBuffer = async (bucket: string, key: string) => {
       return null;
     }
     console.error('Error fetching object from S3:', error);
+    throw error;
+  }
+};
+
+/**
+ * Lists all objects in an S3 bucket that start with a specific prefix.
+ * @param bucket - The S3 bucket name.
+ * @param prefix - The prefix to match objects for deletion.
+ */
+export const listObjectsWithPrefix = async (
+  bucket: string,
+  prefix: string
+): Promise<string[]> => {
+  try {
+    let continuationToken: string | undefined = undefined;
+    const objectsToDelete: { Key: string }[] = [];
+
+    // Fetch objects with the specified prefix
+    do {
+      const listCommand = new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      });
+
+      const listResponse = await getS3Client().send(listCommand);
+
+      if (listResponse.Contents) {
+        for (const item of listResponse.Contents) {
+          if (item.Key) {
+            objectsToDelete.push({ Key: item.Key });
+          }
+        }
+      }
+
+      continuationToken = listResponse.NextContinuationToken;
+    } while (continuationToken);
+
+    if (objectsToDelete.length === 0) {
+      console.log(`No objects found with prefix: ${prefix}`);
+      return [];
+    }
+
+    return objectsToDelete.map((m) => m.Key);
+  } catch (error) {
+    console.error('Error deleting objects:', error);
     throw error;
   }
 };

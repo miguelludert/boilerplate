@@ -78,23 +78,26 @@ export const updateUserEmailAndPassword = async (
 };
 
 export const sendAvatarToResponse = async (userId: string, res: Response) => {
-  const media = await getAllMediaBySource({
-    sourceTableName: mediaSourceName,
+  const partitionKey = {
+    sourceName: mediaSourceName,
     sourceId: userId,
     usage: MediaUsage.avatar,
-  });
+  };
+  const media = await getAllMediaBySource(partitionKey);
   if (media.length) {
     // media resize and get the hash
 
-    const { buffer, contentLength, contentType } = await resizeImage(
-      media[0].mediaId,
-      {
-        sizing: 'crop',
-        height: 200,
-        width: 200,
-      }
-    );
-    console.info('sending');
+    const resizeResponse = await resizeImage(partitionKey, media[0].mediaId, {
+      sizing: 'crop',
+      height: 200,
+      width: 200,
+    });
+    if (!resizeResponse) {
+      res.send(404);
+      return;
+    }
+
+    const { buffer, contentLength, contentType } = resizeResponse!;
 
     res.set('Content-Length', contentLength.toString());
     res.set('Content-Type', contentType);
@@ -111,14 +114,14 @@ export const getAvatarUploadUrl = async (
   fileType: string
 ) => {
   await deleteAllMediaForSource({
-    sourceTableName: mediaSourceName,
+    sourceName: mediaSourceName,
     sourceId: userId,
     usage: MediaUsage.avatar,
   });
   const { mediaId, uploadUrl } = await addMediaToSource(
     userId,
     {
-      sourceTableName: mediaSourceName,
+      sourceName: mediaSourceName,
       sourceId: userId,
       usage: MediaUsage.avatar,
     },
