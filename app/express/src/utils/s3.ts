@@ -1,7 +1,6 @@
 import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
-  DeleteObjectsCommandOutput,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -16,10 +15,6 @@ import {
   getS3Endpoint,
 } from '../constants';
 import { EndsWith } from '../types';
-
-import dateFns from 'date-fns';
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
 
 export type BucketName = EndsWith<'-bucket'>;
 
@@ -38,6 +33,33 @@ const getS3Client = () => {
     forcePathStyle: true,
   });
   return s3Client;
+};
+
+export const writeObjectToS3 = async (
+  bucket: string,
+  key: string,
+  data: any,
+  contentType: string = 'application/json'
+): Promise<void> => {
+  try {
+    const s3Client = getS3Client();
+
+    // Convert data to a string or buffer
+    const body = typeof data === 'object' ? JSON.stringify(data) : data;
+
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    });
+
+    await s3Client.send(command);
+    console.log(`Object written to S3: s3://${bucket}/${key}`);
+  } catch (error) {
+    console.error('Error writing object to S3:', error);
+    throw error;
+  }
 };
 
 export const createUploadUrl = async (
@@ -169,7 +191,15 @@ export const getObjectAsBuffer = async (bucket: string, key: string) => {
     const s3Response = await getS3Client().send(command);
 
     if (!s3Response.Body) {
-      throw new Error('No body returned from S3');
+      console.warn(
+        'No body returned from S3. The object might be empty or does not exist.'
+      );
+      return null;
+    }
+
+    if (s3Response.ContentLength === 0) {
+      console.warn('The object exists but is empty (0 bytes).');
+      return null;
     }
 
     // Convert Body (ReadableStream) to Buffer
@@ -184,12 +214,17 @@ export const getObjectAsBuffer = async (bucket: string, key: string) => {
     const contentType = s3Response.ContentType || 'application/octet-stream';
     const contentLength = s3Response.ContentLength || '0';
     const buffer = await streamToBuffer(s3Response.Body as Readable);
+
     return {
       buffer,
       contentType,
       contentLength,
     };
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === 'NoSuchKey') {
+      console.warn(`The specified object does not exist: ${key}`);
+      return null;
+    }
     console.error('Error fetching object from S3:', error);
     throw error;
   }

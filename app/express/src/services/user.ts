@@ -3,6 +3,7 @@ import {
   addMediaToSource,
   deleteAllMediaForSource,
   getAllMediaBySource,
+  resizeImage,
   sendMediaToResponse,
 } from './media';
 import {
@@ -84,10 +85,17 @@ export const sendAvatarToResponse = async (userId: string, res: Response) => {
   });
   if (media.length) {
     // media resize and get the hash
-    const { buffer, contentLength, contentType } = await getObjectAsBuffer(
-      getMediaBucketName(),
-      media[0].mediaId
+
+    const { buffer, contentLength, contentType } = await resizeImage(
+      media[0].mediaId,
+      {
+        sizing: 'crop',
+        height: 200,
+        width: 200,
+      }
     );
+    console.info('sending');
+
     res.set('Content-Length', contentLength.toString());
     res.set('Content-Type', contentType);
     res.set('Cache-Control', 'public, max-age=3600');
