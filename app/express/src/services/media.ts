@@ -169,11 +169,7 @@ export const resizeImage = async (
 ) => {
   const { format, quality, sizing, center, height, width } = resizeProps;
   const resizeHash = createHashFromObject(resizeProps);
-  const resizeKey = getMediaS3Key(
-    partitionKey,
-    mediaId,
-    `resize.${resizeHash}`
-  );
+  const resizeKey = getMediaS3Key(partitionKey, mediaId, resizeHash);
   const resizeBufferResponse = await getObjectAsBuffer(
     getMediaBucketName(),
     resizeKey

@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import { styled } from '@stitches/react';
 import { Col, Row } from 'reactstrap';
 import { useCurrentUser } from '../providers/AuthProvider';
-import { Button } from '../components/Button';
-import { routes } from '../routes';
+import { Button } from './Button';
+import { routes } from '../../../../app/electron/src/renderer/src/routes';
 import { UserAvatar } from './UserAvatar';
 
 const LayoutContainer = styled('div', {
