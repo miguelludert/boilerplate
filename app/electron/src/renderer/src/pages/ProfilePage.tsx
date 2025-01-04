@@ -1,77 +1,82 @@
-import { Layout } from '@miguelludert/frontend-common'
-import { Button } from '@miguelludert/frontend-common'
+import { Layout } from "@miguelludert/frontend-common";
+import { Button } from "@miguelludert/frontend-common";
 import {
   AppUserData,
-  useCurrentUser
-} from '../../../../../../lib/frontend-common/src/providers/AuthProvider'
-import { useRef, useState } from 'react'
-import { Col, Row } from 'reactstrap'
-import { UserAvatar } from '@miguelludert/frontend-common'
-import { Form } from '@miguelludert/frontend-common'
-import { Input } from '@miguelludert/frontend-common'
+  useCurrentUser,
+} from "../../../../../../lib/frontend-common/src/providers/AuthProvider";
+import { useRef, useState } from "react";
+import { Col, Row } from "reactstrap";
+import { UserAvatar } from "@miguelludert/frontend-common";
+import { Form } from "@miguelludert/frontend-common";
+import { Input } from "@miguelludert/frontend-common";
 
 export interface ProfileViewProps {
-  setCurrentView: (view: ProfileViews) => void
+  setCurrentView: (view: ProfileViews) => void;
 }
 
-export type ProfileViews = 'default' | 'edit' | 'passwordProtected'
+export type ProfileViews = "default" | "edit" | "passwordProtected";
 
 export const ProfilePage = () => {
-  const [currentView, setCurrentView] = useState<ProfileViews>('default')
+  const [currentView, setCurrentView] = useState<ProfileViews>("default");
   const CurrentView = {
     default: ProfileDisplay,
     edit: ProfileEdit,
-    passwordProtected: ProfileEmailPassword
-  }[currentView]
+    passwordProtected: ProfileEmailPassword,
+  }[currentView];
   return (
     <Layout>
       <CurrentView setCurrentView={setCurrentView} />
     </Layout>
-  )
-}
+  );
+};
 
 export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
-  const { userData: userData, uploadAvatar } = useCurrentUser()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const { appUserData: userData, uploadAvatar } = useCurrentUser();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const handleButtonClick = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.click() // Trigger the hidden file input
+      fileInputRef.current.click(); // Trigger the hidden file input
     }
-  }
+  };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
     try {
-      await uploadAvatar({ file })
+      await uploadAvatar({ file });
     } catch (error) {
-      console.error('Upload failed:', error)
+      console.error("Upload failed:", error);
     } finally {
       if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+        fileInputRef.current.value = "";
       }
     }
-  }
+  };
 
   return (
     <>
       <div className="d-flex justify-items-center flex-space-around">
-        <UserAvatar height={'200px'} width={'200px'} />
+        <UserAvatar height={"200px"} width={"200px"} />
         <div className="d-flex flex-column justify-items-center">
           <input
             type="file"
             accept="image/*"
             ref={fileInputRef}
             onChange={handleFileChange}
-            style={{ display: 'none' }} // Hide the input field
+            style={{ display: "none" }} // Hide the input field
           />
           <Button className="m-2" onClick={handleButtonClick}>
             Change Avatar
           </Button>
-          <Button className="m-2" onClick={() => setCurrentView('passwordProtected')}>
+          <Button
+            className="m-2"
+            onClick={() => setCurrentView("passwordProtected")}
+          >
             Change Email & Password
           </Button>
-          <Button className="m-2" onClick={() => setCurrentView('edit')}>
+          <Button className="m-2" onClick={() => setCurrentView("edit")}>
             Edit Profile
           </Button>
         </div>
@@ -103,16 +108,16 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
         </Row>
       </div>
     </>
-  )
+  );
 }
 
 export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
-  const { userData, saveUserData } = useCurrentUser()
+  const { appUserData: userData, saveUserData } = useCurrentUser();
   const onSubmit = async (data: AppUserData) => {
-    console.info('is this correct', data)
-    await saveUserData(data)
-    setCurrentView('default')
-  }
+    console.info("is this correct", data);
+    await saveUserData(data);
+    setCurrentView("default");
+  };
 
   return (
     <Form onSubmit={onSubmit} defaultValues={userData}>
@@ -135,21 +140,29 @@ export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
       </Row>
       <Row xs={12} md={6}>
         <Button type="submit">Save Profile</Button>
-        <Button type="button" onClick={() => setCurrentView('default')} color="danger">
+        <Button
+          type="button"
+          onClick={() => setCurrentView("default")}
+          color="danger"
+        >
           Cancel
         </Button>
       </Row>
     </Form>
-  )
+  );
 }
 
 export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
-  const { saveEmailAndPassword } = useCurrentUser()
-  const onSubmit = async (data: { oldPassword: string; email?: string; newPassword?: string }) => {
-    console.info('is this correct', data)
-    await saveEmailAndPassword(data)
-    setCurrentView('default')
-  }
+  const { saveEmailAndPassword } = useCurrentUser();
+  const onSubmit = async (data: {
+    oldPassword: string;
+    email?: string;
+    newPassword?: string;
+  }) => {
+    console.info("is this correct", data);
+    await saveEmailAndPassword(data);
+    setCurrentView("default");
+  };
 
   return (
     <Form onSubmit={onSubmit}>
@@ -159,7 +172,11 @@ export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
           Current Password:
         </Col>
         <Col xs={12} md={6}>
-          <Input name="oldPassword" type="text" placeholder="Current Password" />
+          <Input
+            name="oldPassword"
+            type="text"
+            placeholder="Current Password"
+          />
         </Col>
       </Row>
       <Row xs={12} lg={6}>
@@ -167,7 +184,11 @@ export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
           New Email Address:
         </Col>
         <Col xs={12} md={6}>
-          <Input name="newEmailAddress" type="text" placeholder="New Email Address" />
+          <Input
+            name="newEmailAddress"
+            type="text"
+            placeholder="New Email Address"
+          />
         </Col>
       </Row>
       <Row xs={12} lg={6}>
@@ -180,10 +201,14 @@ export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
       </Row>
       <Row xs={12} md={6}>
         <Button type="submit">Save Email and Password</Button>
-        <Button type="button" onClick={() => setCurrentView('default')} color="danger">
+        <Button
+          type="button"
+          onClick={() => setCurrentView("default")}
+          color="danger"
+        >
           Cancel
         </Button>
       </Row>
     </Form>
-  )
+  );
 }

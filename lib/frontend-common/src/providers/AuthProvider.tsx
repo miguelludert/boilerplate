@@ -1,11 +1,7 @@
-import {
-  Authenticator,
-  AuthenticatorHandlers,
-} from '../components/Authenticator';
-import { createContext, useContext } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { createContext, useContext, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
-export interface AuthProviderQueryFn extends AuthenticatorHandlers {
+export interface AuthProviderQueryFn {
   handleSaveUserDataMutationFn: (data: AppUserData) => Promise<void>;
   handleGetUserDataQueryFn: () => Promise<AppUserData>;
   handleSaveEmailAndPasswordMutationFn: (args: {
@@ -15,6 +11,16 @@ export interface AuthProviderQueryFn extends AuthenticatorHandlers {
   }) => Promise<void>;
   handleUploadAvatarMutationFn: (args: { file: File }) => Promise<void>;
   handleGetAvatarMutationFn: () => Promise<string>;
+  handleSignOut: () => Promise<void>;
+  handleSignIn: (args: {
+    email: string;
+    password: string;
+  }) => Promise<AppUserData>;
+  handleCreateAccount: (args: {
+    email: string;
+    password: string;
+  }) => Promise<AppUserData>;
+  handleForgotPassword: (args: { email: string }) => Promise<void>;
 }
 
 export interface AppUserData {
@@ -26,8 +32,7 @@ export interface AppUserData {
 }
 
 export interface AppUser {
-  userData: AppUserData;
-  logout?: () => void;
+  appUserData?: AppUserData;
   refetchUser: () => Promise<unknown>;
   saveUserData: (data: AppUserData) => Promise<void>;
   saveEmailAndPassword: (args: {
@@ -35,12 +40,17 @@ export interface AppUser {
     email?: string;
     newPassword?: string;
   }) => Promise<void>;
-  signOut?: () => void;
+
+  // login
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  createAccount: (email: string, password: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
 
   // avatar
   avatar?: string;
   reloadAvatar: () => Promise<void>;
-  uploadAvatar: (args: { file: File }) => Promise<void>;
+  uploadAvatar: (file: File) => Promise<void>;
 }
 
 const AuthContext = createContext<AppUser>({} as AppUser);
@@ -49,111 +59,103 @@ export const useCurrentUser = () => {
   return useContext(AuthContext);
 };
 
-export function AuthProviderContent({
+export function AuthProvider({
   authQueryFn,
-  signOut,
   children,
 }: {
   authQueryFn: AuthProviderQueryFn;
-  signOut?: () => void;
   children: React.ReactElement;
 }) {
+  const [user, setUser] = useState<AppUser | null>(null);
   const {
     handleGetAvatarMutationFn,
     handleGetUserDataQueryFn,
     handleSaveUserDataMutationFn,
     handleSaveEmailAndPasswordMutationFn,
     handleUploadAvatarMutationFn,
+    handleSignIn,
+    handleSignOut,
+    handleCreateAccount,
+    handleForgotPassword,
   } = authQueryFn;
 
-  // avatar
-  const { data: avatarDataUrl, refetch: reloadAvatarQuery } = useQuery({
-    queryKey: ['current-user-avatar'],
-    queryFn: handleGetAvatarMutationFn,
-  });
-  const avatar = avatarDataUrl ? avatarDataUrl : '/icons/user.svg';
-  const reloadAvatar = async () => {
-    await reloadAvatarQuery();
-  };
+  const queryClient = useQueryClient();
+
+  const invalidateCurrentUser = () =>
+    queryClient.invalidateQueries({ queryKey: ["current-user"], exact: false });
 
   // get user data
-  const { data: userData, refetch: refetchUserQuery } = useQuery({
-    queryKey: ['current-user'],
+  const { data: appUserData } = useQuery({
+    queryKey: ["current-user", "data"],
     queryFn: handleGetUserDataQueryFn,
   });
-  const refetchUser = async () => {
-    await refetchUserQuery();
-  };
+  // avatar
+  const { data: avatarDataUrl } = useQuery({
+    queryKey: ["current-user", "avatar"],
+    queryFn: handleGetAvatarMutationFn,
+    enabled: !!appUserData,
+  });
+  const avatar = avatarDataUrl ? avatarDataUrl : "/icons/user.svg";
 
-  // save user data
+  const { mutateAsync: signInAsync } = useMutation({
+    mutationFn: handleSignIn,
+    onSuccess: (data) => {
+      queryClient.setQueryData(["current-user", "data"], data);
+    },
+  });
+  const { mutateAsync: signOutAsync } = useMutation({
+    mutationFn: handleSignOut,
+    onSuccess: invalidateCurrentUser,
+  });
+  const { mutateAsync: createAccountAsync } = useMutation(handleCreateAccount);
+  const { mutateAsync: forgotPasswordAsync } =
+    useMutation(handleForgotPassword);
+
   const { mutateAsync: saveDataMutateAsync } = useMutation({
     mutationFn: handleSaveUserDataMutationFn,
+    onSuccess: invalidateCurrentUser,
   });
-  const saveData = async (data: AppUserData) => {
-    await saveDataMutateAsync(data);
-    await refetchUser();
-  };
-
-  // save email password
-  const { mutateAsync: saveEmailAndPasswordMutateAsync } = useMutation({
+  const { mutateAsync: saveEmailAndPasswordAsync } = useMutation({
     mutationFn: handleSaveEmailAndPasswordMutationFn,
   });
-  const saveEmailAndPassword = async (args: {
-    oldPassword: string;
-    email?: string;
-    newPassword?: string;
-  }) => {
-    await saveEmailAndPasswordMutateAsync(args);
-  };
-
-  // up0load avatar
-  const { mutateAsync: uploadAvatarMutateAsync } = useMutation({
+  const { mutateAsync: uploadAvatarAsync } = useMutation({
     mutationFn: handleUploadAvatarMutationFn,
+    onSuccess: invalidateCurrentUser,
   });
-  const uploadAvatar = async (args: { file: File }) => {
-    await uploadAvatarMutateAsync(args);
-    await reloadAvatar();
-  };
 
   return (
     <AuthContext.Provider
       value={{
-        userData: userData ?? ({} as AppUserData),
-        saveUserData: saveData,
-        saveEmailAndPassword,
-        refetchUser,
-        signOut,
+        appUserData,
+        saveUserData: saveDataMutateAsync,
+        saveEmailAndPassword: saveEmailAndPasswordAsync,
+        refetchUser: () =>
+          queryClient.invalidateQueries(["current-user", "data"]),
+
+        // login
+        async signIn(email: string, password: string) {
+          await signInAsync({ email, password });
+        },
+        async signOut() {
+          await signOutAsync();
+        },
+        async createAccount(email: string, password: string) {
+          await createAccountAsync({ email, password });
+        },
+        async forgotPassword(email: string) {
+          await forgotPasswordAsync({ email });
+        },
 
         // avatar
         avatar,
-        reloadAvatar: async () => {
-          await reloadAvatar();
+        reloadAvatar: () =>
+          queryClient.invalidateQueries(["current-user", "avatar"]),
+        async uploadAvatar(file: File) {
+          await uploadAvatarAsync({ file });
         },
-        uploadAvatar,
       }}
     >
       {children}
     </AuthContext.Provider>
-  );
-}
-
-export function AuthProvider({
-  children,
-  authQueryFn,
-}: {
-  authQueryFn: AuthProviderQueryFn;
-  children: React.ReactElement;
-}) {
-  const { handleCreateAccount, handleForgotPassword, handleSignIn } =
-    authQueryFn;
-  return (
-    <Authenticator
-      {...{ handleCreateAccount, handleForgotPassword, handleSignIn }}
-      render={({ ...props }) => (
-        <AuthProviderContent authQueryFn={authQueryFn} {...props}>
-          {children}
-        </AuthProviderContent>
-      )}
-    ></Authenticator>
   );
 }

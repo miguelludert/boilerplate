@@ -1,50 +1,15 @@
-import React, { useState } from 'react';
-import { AuthComponent } from './AuthComponent';
+import React, { Children, useState } from "react";
+import { AuthComponent } from "./AuthComponent";
+import { AppUser, useCurrentUser } from "../../providers/AuthProvider";
 
-export interface User {
-  id: string;
-  email: string;
+export interface AuthenticatorProps {
+  children: any;
 }
 
-export interface AuthenticatorHandlers {
-  handleSignIn: (email: string, password: string) => Promise<User>;
-  handleCreateAccount: (email: string, password: string) => Promise<User>;
-  handleForgotPassword: (email: string) => Promise<void>;
-}
-export interface AuthenticatorProps extends AuthenticatorHandlers {
-  render: (props: { user: User; signOut: () => void }) => React.ReactNode;
-}
-
-export const Authenticator: React.FC<AuthenticatorProps> = ({
-  render,
-  handleSignIn,
-  handleCreateAccount,
-  handleForgotPassword,
-}) => {
-  const [user, setUser] = useState<User | null>(null);
-
-  const handleSignOut = (): void => {
-    setUser(null);
-  };
-
-  const signIn = async (email: string, password: string): Promise<void> => {
-    const userData = await handleSignIn(email, password);
-    setUser(userData);
-  };
-
-  const createAccount = async (
-    email: string,
-    password: string
-  ): Promise<void> => {
-    const userData = await handleCreateAccount(email, password);
-    setUser(userData);
-  };
-
-  const forgotPassword = async (email: string): Promise<void> => {
-    await handleForgotPassword(email);
-  };
-
-  if (!user) {
+export const Authenticator: React.FC<AuthenticatorProps> = ({ children }) => {
+  const { appUserData, signIn, createAccount, forgotPassword } =
+    useCurrentUser();
+  if (appUserData) {
     return (
       <AuthComponent
         onSignIn={signIn}
@@ -53,6 +18,5 @@ export const Authenticator: React.FC<AuthenticatorProps> = ({
       />
     );
   }
-
-  return <>{render({ user, signOut: handleSignOut })}</>;
+  return children;
 };
