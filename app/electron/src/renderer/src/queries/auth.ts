@@ -7,17 +7,35 @@ const ipcRenderer = window.electron.ipcRenderer;
 
 export const authQueryFn: AuthProviderQueryFn = {
   // AuthenticatorProps methods
-  handleSignOut: async (email: string, password: string) => {
+  handleSignOut: async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
     return ipcRenderer.invoke("handleSignOut", { email, password });
   },
   // AuthenticatorProps methods
-  handleSignIn: async (email: string, password: string) => {
+  handleSignIn: async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
     return ipcRenderer.invoke("handleSignIn", { email, password });
   },
-  handleCreateAccount: async (email: string, password: string) => {
+  handleCreateAccount: async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
     return ipcRenderer.invoke("handleCreateAccount", { email, password });
   },
-  handleForgotPassword: async (email: string) => {
+  handleForgotPassword: async ({ email }: { email: string }) => {
     return ipcRenderer.invoke("handleForgotPassword", { email });
   },
 

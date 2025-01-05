@@ -41,10 +41,7 @@ const Logo = styled("div", {
 });
 
 export const Layout = ({ children }: { children: any }) => {
-  const {
-    signOut,
-    appUserData: { displayName },
-  } = useCurrentUser();
+  const { signOut, appUserData } = useCurrentUser();
   return (
     <LayoutContainer>
       <Header className="d-flex justify-content-between p-1">
@@ -55,7 +52,7 @@ export const Layout = ({ children }: { children: any }) => {
         </Col>
         <Col className="d-flex justify-content-end">
           <Link to="/profile">
-            Welcome {displayName}
+            Welcome {appUserData?.displayName ?? "New User"}
             <UserAvatar height="24px" width="24px" />
           </Link>
           <Button color="secondary" onClick={signOut}>

@@ -21,16 +21,15 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^6.5.5",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@fontsource/roboto": "^5.1.0",
     "@miguelludert/frontend-common": "workspace:^",
-    "aws-amplify": "^6.8.0",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "electron-updater": "^6.1.7",
-    "react-query": "^3.39.3"
+    "react-query": "^3.39.3",
+    "url-join": "^4.0.1"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",

@@ -61,11 +61,6 @@ export interface SignInProps {
 }
 
 export const SignInComponent: React.FC<SignInProps> = ({ onSignIn }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignInFormInputs>();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -88,18 +83,18 @@ export const SignInComponent: React.FC<SignInProps> = ({ onSignIn }) => {
   return (
     <Container>
       <Title>Sign In</Title>
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <Form onSubmit={onSubmit}>
         <FormGroup>
           <Label for="email">Email</Label>
           <Input name="email" />
-          {errors.email && <Alert color="danger">{errors.email.message}</Alert>}
+          {/* {errors.email && <Alert color="danger">{errors.email.message}</Alert>} */}
         </FormGroup>
         <FormGroup>
           <Label for="password">Password</Label>
           <Input name="password" />
-          {errors.password && (
+          {/* {errors.password && (
             <Alert color="danger">{errors.password.message}</Alert>
-          )}
+          )} */}
         </FormGroup>
         {error && <Alert color="danger">{error}</Alert>}
         <StyledButton type="submit" loading={loading}>
