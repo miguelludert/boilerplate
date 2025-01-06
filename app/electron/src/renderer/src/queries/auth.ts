@@ -7,14 +7,8 @@ const ipcRenderer = window.electron.ipcRenderer;
 
 export const authQueryFn: AuthProviderQueryFn = {
   // AuthenticatorProps methods
-  handleSignOut: async ({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) => {
-    return ipcRenderer.invoke("handleSignOut", { email, password });
+  handleSignOut: async () => {
+    return ipcRenderer.invoke("handleSignOut");
   },
   // AuthenticatorProps methods
   handleSignIn: async ({

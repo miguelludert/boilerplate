@@ -9,7 +9,7 @@ export interface AuthenticatorProps {
 export const Authenticator: React.FC<AuthenticatorProps> = ({ children }) => {
   const { appUserData, signIn, createAccount, forgotPassword } =
     useCurrentUser();
-  if (appUserData) {
+  if (!appUserData) {
     return (
       <AuthComponent
         onSignIn={signIn}

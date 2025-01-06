@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ipcMain } from "electron";
 import { getApiEndpoint } from "../constants";
+import { storeDelete, storeGet, storeSet } from "../utils/store";
 
 export interface SignInArgs {
   email: string;
@@ -51,9 +52,8 @@ interface AppSession {
   idToken: string;
 }
 
-let appSession: AppSession | null = null;
-
 axios.interceptors.request.use((config) => {
+  const appSession = storeGet<AppSession>("appSession");
   if (appSession && appSession.idToken) {
     const token = appSession.idToken;
     config.headers.Authorization = `Bearer ${token}`;
@@ -69,7 +69,7 @@ axios.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       console.warn("Unauthorized request detected. Clearing appSession.");
-      appSession = null; // Clear the session
+      storeDelete("appSession");
     }
     // Reject the promise so the error can be handled elsewhere
     return Promise.reject(error);
@@ -87,7 +87,7 @@ ipcMain.handle(
         password,
       });
       const { accessToken, refreshToken, idToken } = response.data;
-      appSession = { accessToken, refreshToken, idToken };
+      storeSet("appSession", { accessToken, refreshToken, idToken });
     } catch (error: any) {
       console.error(error);
       console.error("Sign-in error:", error.message);
@@ -133,10 +133,22 @@ ipcMain.handle(
   },
 );
 
-ipcMain.handle("handleGetUserDataQueryFn", async (): Promise<AppUserData> => {
-  // Fetch user data logic
-  return { id: "1", name: "User", email: "user@example.com" };
-});
+ipcMain.handle(
+  "handleGetUserDataQueryFn",
+  async (): Promise<AppUserData | null> => {
+    // Fetch user data logic
+    try {
+      const { data } = await axios.get(getApiEndpoint(`/user`));
+      return data;
+    } catch (error: any) {
+      if (error.status === 401) {
+        return null;
+      }
+      console.error("Get User error:", error.message);
+      throw new Error("Get User request failed.");
+    }
+  },
+);
 
 ipcMain.handle(
   "handleSaveEmailAndPasswordMutationFn",
@@ -157,4 +169,8 @@ ipcMain.handle(
 ipcMain.handle("handleGetAvatarMutationFn", async (): Promise<string> => {
   // Fetch avatar logic
   return "avatar.png";
+});
+
+ipcMain.handle("handleSignOut", async (): Promise<void> => {
+  storeDelete("appSession");
 });

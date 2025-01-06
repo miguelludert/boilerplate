@@ -11,6 +11,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const protectedRoutes = (routers: Record<string, Router>) => {
+  const routerEntries = Object.entries(routers);
+  routerEntries.forEach(([route, router]) => {
+    router.use((req: Request, res: Response, next: NextFunction) => {
+      validateJwt(req, res, next);
+    });
+    app.use(route, router);
+  });
+};
+
 app.get("/", (req: Request, res: Response<any>) => {
   res.send("OK");
 });
@@ -20,11 +30,9 @@ app.get("/health", (req: Request, res: Response<any>) => {
 
 app.use("/auth", authRouter);
 
-// app.use((req: Request, res: Response, next: NextFunction) => {
-//   validateJwt(req, res, next);
-// });
-
-app.use("/user", userRouter);
+protectedRoutes({
+  "/user": userRouter,
+});
 
 //app.use(process.env.API_ROOT_PATH ?? '/', routes);
 
