@@ -2,6 +2,8 @@ import axios from "axios";
 import { ipcMain } from "electron";
 import { getApiEndpoint } from "../constants";
 import { storeDelete, storeGet, storeSet } from "../utils/store";
+import { fetchImageAsDataUrl } from "../utils/fetchImageAsDataUrl";
+import { readFile } from "fs/promises";
 
 export interface SignInArgs {
   email: string;
@@ -24,7 +26,9 @@ export interface SaveEmailAndPasswordArgs {
 }
 
 export interface UploadAvatarArgs {
-  file: File;
+  filePath: string;
+  fileName: string;
+  fileType: string;
 }
 
 export interface User {
@@ -161,15 +165,33 @@ ipcMain.handle(
 ipcMain.handle(
   "handleUploadAvatarMutationFn",
   async (event, args: UploadAvatarArgs): Promise<void> => {
-    const { file } = args;
-    // Upload avatar logic
+    const { filePath, fileName, fileType } = args;
+    const bytes = await readFile(filePath, {});
+    const buffer = Buffer.from(bytes);
+    const response = await axios.post(getApiEndpoint("/user/avatar"), {
+      fileName,
+      fileType,
+    });
+    const uploadUrl = response.data.uploadUrl;
+    await axios.put(uploadUrl, buffer, {
+      headers: {
+        "Content-Type": fileType,
+      },
+    });
   },
 );
 
-ipcMain.handle("handleGetAvatarMutationFn", async (): Promise<string> => {
-  // Fetch avatar logic
-  return "avatar.png";
-});
+ipcMain.handle(
+  "handleGetAvatarMutationFn",
+  async (): Promise<string | undefined> => {
+    try {
+      return await fetchImageAsDataUrl(getApiEndpoint("/user/avatar"));
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+  },
+);
 
 ipcMain.handle("handleSignOut", async (): Promise<void> => {
   storeDelete("appSession");

@@ -1,36 +1,36 @@
-import { Response } from 'express';
+import { Response } from "express";
 import {
   addMediaToSource,
   deleteAllMediaForSource,
   getAllMediaBySource,
   resizeImage,
   sendMediaToResponse,
-} from './media';
+} from "./media";
 import {
   getCognitoClientId,
   getCognitoUserPoolId,
   getMediaBucketName,
   getUsersTableName,
-} from '../constants';
-import { getObjectAsBuffer } from '../utils/s3';
-import { patchItem, putItem, queryByKey } from '../utils/dynamo';
+} from "../constants";
+import { getObjectAsBuffer } from "../utils/s3";
+import { patchItem, putItem, queryByKey } from "../utils/dynamo";
 import {
   updateCognitoUserEmailAndPassword,
   verifyUserPassword,
-} from '../utils/cognito';
+} from "../utils/cognito";
 
 export interface AppUser {
   userId: string;
 }
 
-export const mediaSourceName = 'users';
+export const mediaSourceName = "users";
 export enum MediaUsage {
-  avatar = 'avatar',
+  avatar = "avatar",
 }
 
 export const editUser = async (appUser: AppUser) => {
   const [user] = await queryByKey<AppUser>(getUsersTableName(), {
-    name: 'userId',
+    name: "userId",
     value: appUser.userId,
   });
   const updatedUser = { ...user, ...appUser };
@@ -39,7 +39,7 @@ export const editUser = async (appUser: AppUser) => {
 
 export const getUser = async (userId: string) => {
   const [user] = await queryByKey<AppUser>(getUsersTableName(), {
-    name: 'userId',
+    name: "userId",
     value: userId,
   });
   return user as AppUser;
@@ -58,7 +58,7 @@ export const updateUserEmailAndPassword = async (
     password: oldPassword,
   });
   if (!verified) {
-    throw Error('Not Authorized');
+    throw Error("Not Authorized");
   }
   await updateCognitoUserEmailAndPassword({
     userPoolId: getCognitoUserPoolId(),
@@ -87,22 +87,27 @@ export const sendAvatarToResponse = async (userId: string, res: Response) => {
   if (media.length) {
     // media resize and get the hash
 
-    const resizeResponse = await resizeImage(partitionKey, media[0].mediaId, {
-      sizing: 'crop',
-      height: 200,
-      width: 200,
-    });
-    if (!resizeResponse) {
-      res.send(404);
-      return;
+    try {
+      const resizeResponse = await resizeImage(partitionKey, media[0].mediaId, {
+        sizing: "crop",
+        height: 200,
+        width: 200,
+      });
+      if (!resizeResponse) {
+        res.send(404);
+        return;
+      }
+
+      const { buffer, contentLength, contentType } = resizeResponse!;
+
+      res.set("Content-Length", contentLength.toString());
+      res.set("Content-Type", contentType);
+      res.set("Cache-Control", "public, max-age=3600");
+      res.send(buffer);
+    } catch (error) {
+      console.error(error);
+      res.sendStatus(500);
     }
-
-    const { buffer, contentLength, contentType } = resizeResponse!;
-
-    res.set('Content-Length', contentLength.toString());
-    res.set('Content-Type', contentType);
-    res.set('Cache-Control', 'public, max-age=3600');
-    res.send(buffer);
   } else {
     res.sendStatus(404);
   }

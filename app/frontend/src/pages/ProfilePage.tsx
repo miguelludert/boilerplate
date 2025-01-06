@@ -1,20 +1,20 @@
-import { Layout } from '../components/Layout';
-import { Button } from '../components/Button';
-import { AppUserData, useCurrentUser } from '../providers/AuthProvider';
-import { useRef, useState } from 'react';
-import { Col, Row } from 'reactstrap';
-import { UserAvatar } from '../components/UserAvatar';
-import { Form } from '../components/Form';
-import { Input } from '../components';
+import { Layout } from "../components/Layout";
+import { Button } from "../components/Button";
+import { AppUserData, useCurrentUser } from "../providers/AuthProvider";
+import { useRef, useState } from "react";
+import { Col, Row } from "reactstrap";
+import { UserAvatar } from "../components/UserAvatar";
+import { Form } from "../components/Form";
+import { Input } from "../components";
 
 export interface ProfileViewProps {
   setCurrentView: (view: ProfileViews) => void;
 }
 
-export type ProfileViews = 'default' | 'edit' | 'passwordProtected';
+export type ProfileViews = "default" | "edit" | "passwordProtected";
 
 export const ProfilePage = () => {
-  const [currentView, setCurrentView] = useState<ProfileViews>('default');
+  const [currentView, setCurrentView] = useState<ProfileViews>("default");
   const CurrentView = {
     default: ProfileDisplay,
     edit: ProfileEdit,
@@ -44,36 +44,36 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
     try {
       await uploadAvatar({ file });
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error("Upload failed:", error);
     } finally {
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
 
   return (
     <>
-      <div className='d-flex justify-items-center flex-space-around'>
-        <UserAvatar height={'200px'} width={'200px'} />
-        <div className='d-flex flex-column justify-items-center'>
+      <div className="d-flex justify-items-center flex-space-around">
+        <UserAvatar height={"200px"} width={"200px"} />
+        <div className="d-flex flex-column justify-items-center">
           <input
-            type='file'
-            accept='image/*'
+            type="file"
+            accept="image/*"
             ref={fileInputRef}
             onChange={handleFileChange}
-            style={{ display: 'none' }} // Hide the input field
+            style={{ display: "none" }} // Hide the input field
           />
-          <Button className='m-2' onClick={handleButtonClick}>
+          <Button className="m-2" onClick={handleButtonClick}>
             Change Avatar
           </Button>
           <Button
-            className='m-2'
-            onClick={() => setCurrentView('passwordProtected')}
+            className="m-2"
+            onClick={() => setCurrentView("passwordProtected")}
           >
             Change Email & Password
           </Button>
-          <Button className='m-2' onClick={() => setCurrentView('edit')}>
+          <Button className="m-2" onClick={() => setCurrentView("edit")}>
             Edit Profile
           </Button>
         </div>
@@ -111,9 +111,9 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
 export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
   const { userData, saveUserData } = useCurrentUser();
   const onSubmit = async (data: AppUserData) => {
-    console.info('is this correct', data);
+    console.info("is this correct", data);
     await saveUserData(data);
-    setCurrentView('default');
+    setCurrentView("default");
   };
 
   return (
@@ -124,7 +124,7 @@ export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
           First name:
         </Col>
         <Col xs={12} md={6}>
-          <Input name='firstName' type='text' placeholder='Your First Name' />
+          <Input name="firstName" type="text" placeholder="Your First Name" />
         </Col>
       </Row>
       <Row xs={12} lg={6}>
@@ -132,15 +132,15 @@ export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
           Last name:
         </Col>
         <Col xs={12} md={6}>
-          <Input name='lastName' type='text' placeholder='Your Last Name' />
+          <Input name="lastName" type="text" placeholder="Your Last Name" />
         </Col>
       </Row>
       <Row xs={12} md={6}>
-        <Button type='submit'>Save Profile</Button>
+        <Button type="submit">Save Profile</Button>
         <Button
-          type='button'
-          onClick={() => setCurrentView('default')}
-          color='danger'
+          type="button"
+          onClick={() => setCurrentView("default")}
+          color="danger"
         >
           Cancel
         </Button>
@@ -156,9 +156,9 @@ export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
     email?: string;
     newPassword?: string;
   }) => {
-    console.info('is this correct', data);
+    console.info("is this correct", data);
     await saveEmailAndPassword(data);
-    setCurrentView('default');
+    setCurrentView("default");
   };
 
   return (
@@ -170,9 +170,9 @@ export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
         </Col>
         <Col xs={12} md={6}>
           <Input
-            name='oldPassword'
-            type='text'
-            placeholder='Current Password'
+            name="oldPassword"
+            type="text"
+            placeholder="Current Password"
           />
         </Col>
       </Row>
@@ -182,9 +182,9 @@ export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
         </Col>
         <Col xs={12} md={6}>
           <Input
-            name='newEmailAddress'
-            type='text'
-            placeholder='New Email Address'
+            name="newEmailAddress"
+            type="text"
+            placeholder="New Email Address"
           />
         </Col>
       </Row>
@@ -193,15 +193,15 @@ export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
           New Password:
         </Col>
         <Col xs={12} md={6}>
-          <Input name='newPassword' type='text' placeholder='New Password' />
+          <Input name="newPassword" type="text" placeholder="New Password" />
         </Col>
       </Row>
       <Row xs={12} md={6}>
-        <Button type='submit'>Save Email and Password</Button>
+        <Button type="submit">Save Email and Password</Button>
         <Button
-          type='button'
-          onClick={() => setCurrentView('default')}
-          color='danger'
+          type="button"
+          onClick={() => setCurrentView("default")}
+          color="danger"
         >
           Cancel
         </Button>

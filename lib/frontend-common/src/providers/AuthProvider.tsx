@@ -89,7 +89,6 @@ export function AuthProvider({
     queryKey: ["current-user", "data"],
     queryFn: handleGetUserDataQueryFn,
   });
-  console.info("appUserData", appUserData);
   // avatar
   const { data: avatarDataUrl } = useQuery({
     queryKey: ["current-user", "avatar"],
@@ -101,9 +100,6 @@ export function AuthProvider({
   const { mutateAsync: signInAsync } = useMutation({
     mutationFn: handleSignIn,
     onSuccess: invalidateCurrentUser,
-    //  (data) => {
-    //   queryClient.setQueryData(["current-user", "data"], data);
-    // },
   });
   const { mutateAsync: signOutAsync } = useMutation({
     mutationFn: handleSignOut,
@@ -153,8 +149,12 @@ export function AuthProvider({
         avatar,
         reloadAvatar: () =>
           queryClient.invalidateQueries(["current-user", "avatar"]),
-        async uploadAvatar(file: File) {
-          await uploadAvatarAsync({ file });
+        async uploadAvatar({ file }: { file: File }) {
+          console.info(file);
+          console.info(file.path);
+          await uploadAvatarAsync({
+            file,
+          });
         },
       }}
     >

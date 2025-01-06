@@ -31,7 +31,6 @@ userRouter.use((req: Request, res: Response, next: NextFunction) => {
 
 // get current user
 userRouter.get("/", async (req: AppRequest, res: any) => {
-  console.info(3);
   const user = await getUser(req.user.sub);
   res.json({ ...user, email: req.user.email });
 });

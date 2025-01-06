@@ -26,6 +26,7 @@
     "@fontsource/roboto": "^5.1.0",
     "@miguelludert/frontend-common": "workspace:^",
     "axios": "^1.7.7",
+    "bootstrap": "^5.3.3",
     "dotenv": "^16.4.5",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.1.7",

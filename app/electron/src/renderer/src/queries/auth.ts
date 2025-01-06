@@ -47,7 +47,12 @@ export const authQueryFn: AuthProviderQueryFn = {
   }) => {
     return ipcRenderer.invoke("handleSaveEmailAndPasswordMutationFn", args);
   },
-  handleUploadAvatarMutationFn: async (args: { file: File }) => {
+  handleUploadAvatarMutationFn: async ({ file }: { file: File }) => {
+    const args = {
+      filePath: file.path,
+      fileName: file.name,
+      fileType: file.type,
+    };
     return ipcRenderer.invoke("handleUploadAvatarMutationFn", args);
   },
   handleGetAvatarMutationFn: async () => {
