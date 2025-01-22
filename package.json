@@ -1,8 +1,8 @@
 {
-    "name": "ml-express-boilerplate",
+    "name": "@miguelludert/boilerplate",
     "private": true,
     "scripts": {
-        "deploy": "build-frontend && build-express && pnpm --filter cdk deploy",
+        "deploy": "build-frontend && build-express && pnpm --filter infra deploy",
         "build-frontend": "pnpm --filter frontend build",
         "build-express": "pnpm --filter express build-docker",
         "start-express": "pnpm --filter express start",

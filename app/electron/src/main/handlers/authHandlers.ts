@@ -133,7 +133,12 @@ ipcMain.handle(
 ipcMain.handle(
   "handleSaveUserDataMutationFn",
   async (event, data: AppUserData): Promise<void> => {
-    // Save user data logic
+    try {
+      await axios.post(getApiEndpoint(`/user`), data);
+    } catch (error: any) {
+      console.error("Forgot password error:", error.message);
+      throw new Error("Forgot password request failed.");
+    }
   },
 );
 
