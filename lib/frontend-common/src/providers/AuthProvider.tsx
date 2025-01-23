@@ -12,14 +12,11 @@ export interface AuthProviderQueryFn {
   handleUploadAvatarMutationFn: (args: { file: File }) => Promise<void>;
   handleGetAvatarMutationFn: () => Promise<string>;
   handleSignOut: () => Promise<void>;
-  handleSignIn: (args: {
-    email: string;
-    password: string;
-  }) => Promise<AppUserData>;
+  handleSignIn: (args: { email: string; password: string }) => Promise<void>;
   handleCreateAccount: (args: {
     email: string;
     password: string;
-  }) => Promise<AppUserData>;
+  }) => Promise<void>;
   handleForgotPassword: (args: { email: string }) => Promise<void>;
 }
 
@@ -50,7 +47,7 @@ export interface AppUser {
   // avatar
   avatar?: string;
   reloadAvatar: () => Promise<void>;
-  uploadAvatar: (file: File) => Promise<void>;
+  uploadAvatar: (args: { file: File }) => Promise<void>;
 }
 
 const AuthContext = createContext<AppUser>({} as AppUser);

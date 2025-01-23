@@ -118,9 +118,7 @@ ipcMain.handle(
 
 ipcMain.handle(
   "handleForgotPassword",
-  async (event, args: ForgotPasswordArgs): Promise<void> => {
-    const { email } = args;
-
+  async (event, { email }: ForgotPasswordArgs): Promise<void> => {
     try {
       await axios.post(getApiEndpoint(`/auth/forgotPassword`), { email });
     } catch (error: any) {
@@ -161,9 +159,16 @@ ipcMain.handle(
 
 ipcMain.handle(
   "handleSaveEmailAndPasswordMutationFn",
-  async (event, args: SaveEmailAndPasswordArgs): Promise<void> => {
-    //const { oldPassword, email, newPassword } = args;
-    // Update email/password logic
+  async (
+    event,
+    { email, newPassword, oldPassword }: SaveEmailAndPasswordArgs,
+  ): Promise<void> => {
+    if (oldPassword === newPassword) {
+      await axios.post(getApiEndpoint(`/user/security`), {
+        email,
+        newPassword,
+      });
+    }
   },
 );
 

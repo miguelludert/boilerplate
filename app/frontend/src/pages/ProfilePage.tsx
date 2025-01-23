@@ -1,11 +1,14 @@
-import { Layout } from "../components/Layout";
-import { Button } from "../components/Button";
-import { AppUserData, useCurrentUser } from "../providers/AuthProvider";
 import { useRef, useState } from "react";
 import { Col, Row } from "reactstrap";
-import { UserAvatar } from "../components/UserAvatar";
-import { Form } from "../components/Form";
-import { Input } from "../components";
+import {
+  Input,
+  Form,
+  UserAvatar,
+  Button,
+  Layout,
+  AppUserData,
+  useCurrentUser,
+} from "@miguelludert/frontend-common";
 
 export interface ProfileViewProps {
   setCurrentView: (view: ProfileViews) => void;
@@ -28,7 +31,7 @@ export const ProfilePage = () => {
 };
 
 export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
-  const { userData: userData, uploadAvatar } = useCurrentUser();
+  const { appUserData, uploadAvatar } = useCurrentUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const handleButtonClick = () => {
     if (fileInputRef.current) {
@@ -84,7 +87,7 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
             First name:
           </Col>
           <Col xs={12} md={6}>
-            {userData?.firstName}
+            {appUserData?.firstName}
           </Col>
         </Row>
         <Row xs={12} lg={6}>
@@ -92,7 +95,7 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
             Last name:
           </Col>
           <Col xs={12} md={6}>
-            {userData?.lastName}
+            {appUserData?.lastName}
           </Col>
         </Row>
         <Row xs={12} lg={6}>
@@ -100,7 +103,7 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
             Email Address:
           </Col>
           <Col xs={12} md={6}>
-            {userData?.email}
+            {appUserData?.email}
           </Col>
         </Row>
       </div>
@@ -109,7 +112,7 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
 }
 
 export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
-  const { userData, saveUserData } = useCurrentUser();
+  const { appUserData, saveUserData } = useCurrentUser();
   const onSubmit = async (data: AppUserData) => {
     console.info("is this correct", data);
     await saveUserData(data);
@@ -117,7 +120,7 @@ export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
   };
 
   return (
-    <Form onSubmit={onSubmit} defaultValues={userData}>
+    <Form onSubmit={onSubmit} defaultValues={appUserData}>
       <h1>Edit Profile</h1>
       <Row xs={12} lg={6}>
         <Col xs={12} md={6}>
