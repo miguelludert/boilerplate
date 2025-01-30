@@ -5,19 +5,19 @@ import {
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Readable } from 'stream';
-import { Response } from 'express';
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Readable } from "stream";
+import { Response } from "express";
 import {
   getAwsAccessKeyId,
   getAwsRegion,
   getAwsSecretAccessKey,
   getS3Endpoint,
-} from '../constants';
-import { EndsWith } from '../types';
+} from "../constants";
+import { EndsWith } from "../types";
 
-export type BucketName = EndsWith<'-bucket'>;
+export type BucketName = EndsWith<"-bucket">;
 
 const getS3Client = () => {
   const credentials =
@@ -40,7 +40,7 @@ export const writeObjectToS3 = async (
   bucket: string,
   key: string,
   data: Buffer,
-  contentType: string = 'application/json'
+  contentType: string = "application/json"
 ): Promise<void> => {
   try {
     const s3Client = getS3Client();
@@ -54,7 +54,7 @@ export const writeObjectToS3 = async (
     await s3Client.send(command);
     console.log(`Object written to S3: s3://${bucket}/${key}`);
   } catch (error) {
-    console.error('Error writing object to S3:', error);
+    console.error("Error writing object to S3:", error);
     throw error;
   }
 };
@@ -80,7 +80,7 @@ export const sendObjectStreamToResponse = async (
   key: string,
   res: Response
 ) => {
-  throw 'no implemented properly';
+  throw "no implemented properly";
 
   try {
     // Fetch the object from S3
@@ -92,22 +92,22 @@ export const sendObjectStreamToResponse = async (
     const s3Response = await getS3Client().send(command);
 
     if (!s3Response.Body) {
-      return res.status(404).send('File not found');
+      return res.status(404).send("File not found");
     }
 
     // Set appropriate headers for the file stream
     res.setHeader(
-      'Content-Type',
-      s3Response.ContentType || 'application/octet-stream'
+      "Content-Type",
+      s3Response.ContentType || "application/octet-stream"
     );
-    res.setHeader('Content-Length', s3Response.ContentLength || '0');
+    res.setHeader("Content-Length", s3Response.ContentLength || "0");
 
     // // Stream the file to the client
     // const byteArray = s3Response.Body.transformToByteArray();
     // res.send(Buffer.from(s3Response.Body));
   } catch (error) {
-    console.error('Error streaming file from S3:', error);
-    res.status(500).send('Failed to fetch the file');
+    console.error("Error streaming file from S3:", error);
+    res.status(500).send("Failed to fetch the file");
   }
 };
 
@@ -132,8 +132,8 @@ export async function deleteOneObject(
       `Object "${key}" deleted successfully from bucket "${bucketName}".`
     );
   } catch (error) {
-    console.error('Error deleting object:', error);
-    throw new Error('Failed to delete object');
+    console.error("Error deleting object:", error);
+    throw new Error("Failed to delete object");
   }
 }
 
@@ -148,7 +148,7 @@ export async function deleteBatchObjects(
   keys: string[]
 ): Promise<void> {
   if (keys.length === 0) {
-    console.log('No objects to delete.');
+    console.log("No objects to delete.");
     return;
   }
 
@@ -177,8 +177,8 @@ export async function deleteBatchObjects(
       });
     }
   } catch (error) {
-    console.error('Error deleting objects:', error);
-    throw new Error('Failed to delete batch objects');
+    console.error("Error deleting objects:", error);
+    throw new Error("Failed to delete batch objects");
   }
 }
 
@@ -189,13 +189,13 @@ export const getObjectAsBuffer = async (bucket: string, key: string) => {
 
     if (!s3Response.Body) {
       console.warn(
-        'No body returned from S3. The object might be empty or does not exist.'
+        "No body returned from S3. The object might be empty or does not exist."
       );
       return null;
     }
 
     if (s3Response.ContentLength === 0) {
-      console.warn('The object exists but is empty (0 bytes).');
+      console.warn("The object exists but is empty (0 bytes).");
       return null;
     }
 
@@ -208,8 +208,8 @@ export const getObjectAsBuffer = async (bucket: string, key: string) => {
       return Buffer.concat(chunks);
     };
 
-    const contentType = s3Response.ContentType || 'application/octet-stream';
-    const contentLength = s3Response.ContentLength || '0';
+    const contentType = s3Response.ContentType || "application/octet-stream";
+    const contentLength = s3Response.ContentLength || "0";
     const buffer = await streamToBuffer(s3Response.Body as Readable);
 
     return {
@@ -218,11 +218,11 @@ export const getObjectAsBuffer = async (bucket: string, key: string) => {
       contentLength,
     };
   } catch (error: any) {
-    if (error.name === 'NoSuchKey') {
+    if (error.name === "NoSuchKey") {
       console.warn(`The specified object does not exist: ${key}`);
       return null;
     }
-    console.error('Error fetching object from S3:', error);
+    console.error("Error fetching object from S3:", error);
     throw error;
   }
 };
@@ -242,7 +242,7 @@ export const listObjectsWithPrefix = async (
 
     // Fetch objects with the specified prefix
     do {
-      const listCommand = new ListObjectsV2Command({
+      const listCommand: ListObjectsV2Command = new ListObjectsV2Command({
         Bucket: bucket,
         Prefix: prefix,
         ContinuationToken: continuationToken,
@@ -268,7 +268,7 @@ export const listObjectsWithPrefix = async (
 
     return objectsToDelete.map((m) => m.Key);
   } catch (error) {
-    console.error('Error deleting objects:', error);
+    console.error("Error deleting objects:", error);
     throw error;
   }
 };

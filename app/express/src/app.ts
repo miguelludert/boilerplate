@@ -1,10 +1,8 @@
 import express, { NextFunction, Request, Response, Router } from "express";
-import { userRouter } from "./routers/user";
+import cors from "cors";
 import { authRouter } from "./routers/auth";
 import { validateJwt } from "./utils/auth";
-import cors from "cors";
-import { AppRequest } from "./types";
-import { sendAvatarToResponse } from "./services/user";
+import { userRouter } from "./routers/user";
 
 const app = express();
 

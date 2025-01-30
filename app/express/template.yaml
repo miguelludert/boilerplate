@@ -6,11 +6,12 @@ Resources:
   MyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ml-express-boilerplate
+      FunctionName: ta2025-local-express
       PackageType: Image
-      ImageUri: ml-express-boilerplate
+      ImageUri: ta2025-local-express
       MemorySize: 512
       Timeout: 60
-      # Environment:
-      #   Variables:
-      #     ENV_VAR_KEY: ENV_VAR_VALUE
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Sub "${COGNITO_USER_POOL_ID}"
+          COGNITO_CLIENT_ID: !Sub "${COGNITO_CLIENT_ID}"

@@ -3,7 +3,5 @@ export interface NamingConventionProps {
   namingConvention: NamingConvention;
 }
 export interface Directories {
-  functionsDir: string;
-  expressDir: string;
   frontendDir: string;
 }

@@ -1,21 +1,12 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { AppRequest } from "../types";
-import urlJoin from "url-join";
-import {
-  addMediaToSource,
-  getAllMediaBySource,
-  sendMediaToResponse,
-} from "../services/media";
 import {
   editUser,
   getAvatarUploadUrl,
   getUser,
-  mediaSourceName,
-  MediaUsage,
   sendAvatarToResponse,
   updateUserEmailAndPassword,
 } from "../services/user";
-import { createUploadUrl } from "../utils/s3";
 import { validateJwt } from "../utils/auth";
 
 interface EditableUserFields {

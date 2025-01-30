@@ -11,3 +11,4 @@ pnpm-lock.yaml
 .build
 .aws-sam
 docker-data
+.deploy

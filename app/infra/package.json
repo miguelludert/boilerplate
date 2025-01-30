@@ -1,5 +1,5 @@
 {
-  "name": "@miguelludert/cdk",
+  "name": "@miguelludert/infra",
   "version": "0.1.0",
   "bin": {
     "cdk": "bin/cdk.js"
@@ -20,6 +20,10 @@
     "typescript": "~5.6.2"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.734.0",
+    "@aws-sdk/client-dynamodb": "^3.687.0",
+    "@aws-sdk/client-ecr": "^3.734.0",
+    "@aws-sdk/client-s3": "^3.696.0",
     "aws-cdk-lib": "2.162.1",
     "change-case": "^5.4.4",
     "constructs": "^10.0.0",

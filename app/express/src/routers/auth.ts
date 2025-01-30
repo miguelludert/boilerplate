@@ -6,10 +6,7 @@ import {
   SignUpCommand,
   ForgotPasswordCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import dotenv from "dotenv";
 import { AppRequest } from "../types";
-
-dotenv.config();
 
 const { COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID } = process.env;
 

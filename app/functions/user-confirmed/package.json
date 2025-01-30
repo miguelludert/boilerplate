@@ -2,15 +2,11 @@
   "name": "@miguelludert/user-confirmed",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "start": "tsx watch --env-file='../../.env' ./src/local-server.ts",
-    "start-build": "node ./.output/lambda-server.js",
-    "start-docker": "sam local invoke",
-    "build-express": "docker build . -t ml-express-boilerplate",
-    "docker": "pnpm build-express --no-cache && pnpm start-docker",
+    "build-and-push": "sh ../../../cli/docker-build-and-push.sh user-confirmed",
+    "bash-docker": "docker run -it --rm --entrypoint /bin/sh ta2025-user-confirmed",
     "build": "npx tsc",
-    "zip": "pnpm build && ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
