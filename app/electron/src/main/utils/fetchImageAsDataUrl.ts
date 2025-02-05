@@ -21,8 +21,16 @@ export const fetchImageAsDataUrl = async (
       response.headers["content-type"] || "application/octet-stream";
     const base64Data = buffer.toString("base64");
     return `data:${mimeType};base64,${base64Data}`;
-  } catch (error) {
-    console.error("Error fetching image:", error);
+  } catch (error: any) {
+    if (error.response.status == 404) {
+      console.error("Error fetching image: No image found");
+      return "";
+    }
+    if (error.response.status == 401) {
+      console.error("Error fetching image: Unauthorized");
+      return "";
+    }
+    console.info(error);
     throw new Error("Failed to fetch the image");
   }
 };

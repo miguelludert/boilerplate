@@ -3,6 +3,7 @@ import { Stack, RemovalPolicy, StackProps } from "aws-cdk-lib";
 import { BlockPublicAccess, Bucket } from "aws-cdk-lib/aws-s3";
 import { AttributeType, Table } from "aws-cdk-lib/aws-dynamodb";
 import { NamingConventionProps } from "../types";
+import { outputs } from "../utils/output";
 
 export type StorageStackProps = StackProps & NamingConventionProps;
 
@@ -62,10 +63,19 @@ export class StorageStack extends Stack {
     this.tables["media-table"].addGlobalSecondaryIndex({
       indexName: "bySource",
       partitionKey: {
-        name: "sourceTableName#sourceId#usage",
+        name: "sourceName#sourceId#usage",
         type: AttributeType.STRING,
       },
       sortKey: { name: "mediaId", type: AttributeType.STRING },
+    });
+
+    outputs(this, namingConvention("output"), {
+      tables: JSON.stringify(
+        Object.values(this.tables).map((table: any) => table.tableName)
+      ),
+      buckets: JSON.stringify(
+        Object.values(this.buckets).map((bucket: any) => bucket.bucketName)
+      ),
     });
   }
 }

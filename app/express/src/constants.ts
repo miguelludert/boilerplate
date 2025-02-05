@@ -1,5 +1,10 @@
+import { kebabCase } from "change-case";
 import { DynamoTableName } from "./utils/dynamo";
 import { BucketName } from "./utils/s3";
+
+// naming convention
+const namingConvention = (name: string) =>
+  `${process.env.APP_NAME}-${process.env.STAGE}-${kebabCase(name)}`;
 
 // env vars
 export const getRootPath = () => process.env.API_ROOT_PATH ?? "/";
@@ -13,13 +18,15 @@ export const getMediaTablePartitionKey = () => "mediaId";
 export const getMediaBySourcePartitionKey = () => "sourceName#sourceId#usage";
 export const getMediaBySourceIndexName = () => "bySource";
 
-// secrets
+// by convention
 export const getUsersTableName = () =>
-  (process.env.USERS_TABLE_NAME || "") as DynamoTableName;
+  namingConvention(`users-table`) as DynamoTableName;
 export const getMediaTableName = () =>
-  (process.env.MEDIA_TABLE_NAME || "") as DynamoTableName;
+  namingConvention(`media-table`) as DynamoTableName;
 export const getMediaBucketName = () =>
-  (process.env.MEDIA_BUCKET_NAME || "") as BucketName;
+  namingConvention(`media-bucket`) as BucketName;
+
+// secrets
 export const getAwsAccessKeyId = () => process.env.AWS_ACCESS_ID || "";
 export const getAwsSecretAccessKey = () => process.env.AWS_ACCESS_SECRET || "";
 export const getCognitoUserPoolId = () =>

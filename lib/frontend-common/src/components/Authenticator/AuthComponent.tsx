@@ -24,11 +24,6 @@ const Container = styled("div", {
   padding: "$lg",
 });
 
-const Title = styled("h1", {
-  textAlign: "center",
-  marginBottom: "$lg",
-});
-
 const Link = styled("span", {
   color: "$primary",
   cursor: "pointer",
@@ -45,7 +40,6 @@ export interface AuthComponentProps {
 
 export const AuthComponent: React.FC<AuthComponentProps> = ({
   onSignIn,
-  onCreateAccount,
   onForgotPassword,
 }) => {
   const [activeTab, setActiveTab] = useState("signIn");
@@ -90,7 +84,7 @@ export const AuthComponent: React.FC<AuthComponentProps> = ({
               </div>
             </TabPane>
             <TabPane tabId="createAccount">
-              <CreateAccountComponent onCreateAccount={onCreateAccount} />
+              <CreateAccountComponent />
             </TabPane>
           </TabContent>
         </>

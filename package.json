@@ -9,8 +9,8 @@
         "bash-lambda-base": "docker run -it --rm --entrypoint /bin/sh lambda-base ",
         "build-frontend": " pnpm -r --filter *frontend run build",
         "build-libs": "pnpm -r --filter './lib/*' run build",
-        "start": "",
-        "list": "",
+        "start": "pnpm -r --filter './app/*' --stream --no-clear start",
+        "bootstrap": "sh cli/bootstrap.sh",
         "pretty": "",
         "test": ""
     },

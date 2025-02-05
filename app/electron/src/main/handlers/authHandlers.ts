@@ -103,6 +103,8 @@ ipcMain.handle(
 ipcMain.handle(
   "handleCreateAccount",
   async (event, args: CreateAccountArgs): Promise<void> => {
+    console.info("handleCreateAccount", args);
+    console.info(getApiEndpoint(`/auth/create`));
     const { email, password } = args;
     try {
       await axios.post(getApiEndpoint(`/auth/create`), {

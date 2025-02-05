@@ -6,7 +6,14 @@ import { userRouter } from "./routers/user";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["*"],
+    allowedHeaders: ["*"], // Allowed headers
+    credentials: true, // Allow cookies/auth headers
+  })
+);
 app.use(express.json());
 
 const protectedRoutes = (routers: Record<string, Router>) => {

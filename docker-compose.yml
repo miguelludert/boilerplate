@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   s3mock:
     image: adobe/s3mock
@@ -18,7 +17,7 @@ services:
       - 8000:8000
     command: '-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/'
   cognito:
-    image : jagregory/cognito-local
+    image: jagregory/cognito-local
     container_name: cognito-local
     ports:
       - "9229:9229" # Expose the local Cognito port

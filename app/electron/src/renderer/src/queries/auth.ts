@@ -27,6 +27,7 @@ export const authQueryFn: AuthProviderQueryFn = {
     email: string;
     password: string;
   }) => {
+    console.info("handleCreateAccount");
     return ipcRenderer.invoke("handleCreateAccount", { email, password });
   },
   handleForgotPassword: async ({ email }: { email: string }) => {

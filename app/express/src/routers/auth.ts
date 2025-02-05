@@ -5,6 +5,7 @@ import {
   GlobalSignOutCommand,
   SignUpCommand,
   ForgotPasswordCommand,
+  AdminConfirmSignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { AppRequest } from "../types";
 
@@ -84,11 +85,23 @@ authRouter.post("/create", async (req: AppRequest, res: any) => {
 
     const response = await cognitoClient.send(signUpCommand);
 
+    // Immediately confirm the user
+    const confirmCommand = new AdminConfirmSignUpCommand({
+      UserPoolId: process.env.COGNITO_USER_POOL_ID!, // ensure this is set in your environment
+      Username: email,
+    });
+    await cognitoClient.send(confirmCommand);
+
     res.json({
       message: "User created successfully.",
       userSub: response.UserSub,
     });
   } catch (error: any) {
+    if (error.message === "User already exists") {
+      console.error("Create User Error: User already exists");
+      res.status(202).json({ message: "User already exists." });
+      return;
+    }
     console.error("Create User Error:", error.message);
     res.status(500).json({ message: "User creation failed." });
   }

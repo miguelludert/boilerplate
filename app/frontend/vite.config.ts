@@ -1,30 +1,34 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import dotenv from 'dotenv';
-import { join } from 'path';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import dotenv from "dotenv";
+import { join } from "path";
 
-dotenv.config({ path: join(__dirname, '../../.env') });
+const suffix = process.env.SUFFIX ?? "";
 
-const {
-  FRONTEND_PORT,
-  API_ENDPOINT,
-  COGNITO_USER_POOL_ID,
-  COGNITO_CLIENT_ID,
-  COGNITO_CLIENT_SECRET,
-} = process.env;
+function assertEnvVar(name: string): string {
+  const value = process.env[name];
+  if (!value || value.trim() === "") {
+    throw new Error(
+      `Environment variable ${name} is required but missing or empty.`
+    );
+  }
+  return value;
+}
+
+dotenv.config({ path: join(__dirname, `../../.env${suffix}`) });
+assertEnvVar("STAGE");
+console.info("STAGE", process.env.STAGE);
+assertEnvVar("API_ENDPOINT");
+console.info("API_ENDPOINT", process.env.API_ENDPOINT);
+
+const { LOCAL_FRONTEND_PORT, API_ENDPOINT } = process.env;
 
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: parseInt(FRONTEND_PORT!),
+    port: parseInt(LOCAL_FRONTEND_PORT!),
   },
   define: {
-    'import.meta.env.VITE_API_ENDPOINT': JSON.stringify(API_ENDPOINT),
-    'import.meta.env.VITE_COGNITO_USER_POOL_ID':
-      JSON.stringify(COGNITO_USER_POOL_ID),
-    'import.meta.env.VITE_COGNITO_CLIENT_ID': JSON.stringify(COGNITO_CLIENT_ID),
-    'import.meta.env.VITE_COGNITO_CLIENT_SECRET': JSON.stringify(
-      COGNITO_CLIENT_SECRET
-    ),
+    "import.meta.env.VITE_API_ENDPOINT": JSON.stringify(API_ENDPOINT),
   },
 });

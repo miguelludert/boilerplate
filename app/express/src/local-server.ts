@@ -1,8 +1,8 @@
-import { app } from './app';
+import { app } from "./app";
 
-const port = process.env.EXPRESS_PORT || 3000;
+const port = process.env.LOCAL_EXPRESS_PORT || 3000;
 app
-  .on('error', (error) => {
+  .on("error", (error) => {
     console.error(error);
     throw error;
   })

@@ -9,26 +9,10 @@ import { Authenticator, AuthProvider } from "@miguelludert/frontend-common";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./routes";
 import { authQueryFn } from "./queries/auth";
-import { Amplify, ResourcesConfig } from "aws-amplify";
 
 const router = createHashRouter(routes);
 
 const queryClient = new QueryClient();
-
-const {
-  VITE_COGNITO_USER_POOL_ID: userPoolId,
-  VITE_COGNITO_CLIENT_ID: userPoolClientId,
-} = import.meta.env;
-
-const awsConfig: ResourcesConfig = {
-  Auth: {
-    Cognito: {
-      userPoolId,
-      userPoolClientId,
-    },
-  },
-};
-Amplify.configure(awsConfig);
 
 function App() {
   return (

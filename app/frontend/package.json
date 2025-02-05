@@ -6,6 +6,7 @@
   "scripts": {
     "start": "vite",
     "build": "tsc -b && vite build",
+    "build-dev": "tsc -b && SUFFIX='dev'  vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

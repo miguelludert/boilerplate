@@ -6,9 +6,9 @@ Resources:
   MyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ta2025-local-express
+      FunctionName: boilerplate-local-express
       PackageType: Image
-      ImageUri: ta2025-local-express
+      ImageUri: boilerplate-local-express
       MemorySize: 512
       Timeout: 60
       Environment:
