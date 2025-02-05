@@ -71,12 +71,17 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
             Change Avatar
           </Button>
           <Button
+            disabled={true}
             className="m-2"
             onClick={() => setCurrentView("passwordProtected")}
           >
             Change Email & Password
           </Button>
-          <Button className="m-2" onClick={() => setCurrentView("edit")}>
+          <Button
+            disabled={true}
+            className="m-2"
+            onClick={() => setCurrentView("edit")}
+          >
             Edit Profile
           </Button>
         </div>

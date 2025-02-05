@@ -2,17 +2,9 @@
     "name": "@miguelludert/boilerplate",
     "private": true,
     "scripts": {
-        "deploy": "build-frontend && build-express && pnpm --filter infra deploy",
-        "build-and-push-all": "pnpm run build-and-push && pnpm -r --filter './app/**' --workspace-concurrency=1 run build-and-push ",
-        "build-and-push": "sh ./cli/docker-build-and-push.sh lambda-base",
-        "build-lambda-base": "docker buildx build . -t lambda-base",
-        "bash-lambda-base": "docker run -it --rm --entrypoint /bin/sh lambda-base ",
-        "build-frontend": " pnpm -r --filter *frontend run build",
-        "build-libs": "pnpm -r --filter './lib/*' run build",
-        "start": "",
-        "list": "",
-        "pretty": "",
-        "test": ""
+        "start": "pnpm -r --filter './app/**' start",
+        "start-frontent": "pnpm -r --filter './app/frontend' start",
+        "start-backend": "pnpm -r --filter './app/backend' start"
     },
     "dependencies": {
         "eslint": "^9.13.0",

@@ -5,7 +5,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { AuthProvider, Authenticator } from "@miguelludert/frontend-common";
+import { AuthProvider, AppProvider } from "@miguelludert/frontend-common";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { routes } from "./routes";
 import { authQueryFn } from "./queries/auth";
@@ -18,9 +18,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider authQueryFn={authQueryFn}>
-        <Authenticator>
+        <AppProvider routes={routes}>
           <RouterProvider router={router}></RouterProvider>
-        </Authenticator>
+        </AppProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

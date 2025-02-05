@@ -1,1 +1,3 @@
-export * from "./artwork";
+export type AppRoute = RouteObject & {
+  label?: string;
+};

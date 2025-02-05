@@ -50,14 +50,12 @@ const handleSignOut = async () => {
 
 const handleUploadAvatarMutationFn = async ({ file }: { file: File }) => {
   const { name: fileName, type: fileType } = file;
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
   const response = await axios.post(getApiEndpoint("/user/avatar"), {
     fileName,
     fileType,
   });
   const uploadUrl = response.data.uploadUrl;
-  await axios.put(uploadUrl, buffer, {
+  await axios.put(uploadUrl, file, {
     headers: {
       "Content-Type": fileType,
     },

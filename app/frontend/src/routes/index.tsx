@@ -1,20 +1,16 @@
-import { Home } from '../pages/Home';
-import { RouteObject } from 'react-router-dom';
-import { ProfilePage } from '../pages/ProfilePage';
-
-export type AppRoute = RouteObject & {
-  label?: string;
-};
+import { Home } from "../pages/Home";
+import { AppRoute } from "@miguelludert/types-common";
+import { ProfilePage } from "../pages/ProfilePage";
 
 export const routes: AppRoute[] = [
   {
-    path: '/',
+    path: "/",
     element: <Home />,
-    label: 'Home',
+    label: "Home",
   },
   {
-    path: '/profile',
+    path: "/profile",
     element: <ProfilePage />,
-    label: 'Profile',
+    label: "Profile",
   },
 ];

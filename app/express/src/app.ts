@@ -1,7 +1,5 @@
 import express, { NextFunction, Request, Response, Router } from "express";
 import cors from "cors";
-import { authRouter } from "./routers/auth";
-import { validateJwt } from "./utils/auth";
 import { userRouter } from "./routers/user";
 
 const app = express();
@@ -16,28 +14,26 @@ app.use(
 );
 app.use(express.json());
 
-const protectedRoutes = (routers: Record<string, Router>) => {
+const addRouters = (routers: Record<string, Router>) => {
   const routerEntries = Object.entries(routers);
   routerEntries.forEach(([route, router]) => {
-    router.use((req: Request, res: Response, next: NextFunction) => {
-      validateJwt(req, res, next);
-    });
     app.use(route, router);
   });
 };
 
+// this route is intended to be removed or changed for your application
 app.get("/", (req: Request, res: Response<any>) => {
-  res.send("OK");
+  res.send("BOILERPLATE - MINIMAL WEB APP");
 });
+
 app.get("/health", (req: Request, res: Response<any>) => {
   res.send("HEALTHY");
 });
 
-app.use("/auth", authRouter);
-
-protectedRoutes({
-  "/user": userRouter,
-});
+app.use("/user", userRouter);
+// addRouters({
+//   "/user": userRouter,
+// });
 
 //app.use(process.env.API_ROOT_PATH ?? '/', routes);
 

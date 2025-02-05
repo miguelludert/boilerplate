@@ -16,8 +16,6 @@ function assertEnvVar(name: string): string {
 }
 
 dotenv.config({ path: join(__dirname, `../../.env${suffix}`) });
-assertEnvVar("STAGE");
-console.info("STAGE", process.env.STAGE);
 assertEnvVar("API_ENDPOINT");
 console.info("API_ENDPOINT", process.env.API_ENDPOINT);
 

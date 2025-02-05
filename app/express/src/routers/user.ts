@@ -17,7 +17,13 @@ interface EditableUserFields {
 export const userRouter = Router();
 
 userRouter.use((req: Request, res: Response, next: NextFunction) => {
-  validateJwt(req, res, next);
+  const appRequest = req as AppRequest;
+  appRequest.user = {
+    id: "local-user",
+    sub: "local-user",
+    email: process.env.LOCAL_USER_EMAIL!,
+  };
+  next();
 });
 
 // get current user
@@ -36,15 +42,7 @@ userRouter.post("/", async (req: AppRequest, res: any) => {
 
 // edit current user
 userRouter.post("/security", async (req: AppRequest, res: any) => {
-  const { oldPassword, newPassword, newEmailAddress } = req.body;
-  const userId = req.user.email;
-  await updateUserEmailAndPassword(
-    userId,
-    oldPassword,
-    newPassword,
-    newEmailAddress
-  );
-  res.json("OK");
+  res.sendStatus(501);
 });
 
 // get current user's avatar

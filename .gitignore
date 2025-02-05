@@ -7,6 +7,8 @@ cdk.out
 package-lock.json
 pnpm-lock.yaml
 .env
+.env.*
+!.env.sample
 .docker-data
 .build
 .aws-sam

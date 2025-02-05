@@ -1,10 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useRoutes } from "react-router-dom";
 import { styled } from "@stitches/react";
 import { Col, Row } from "reactstrap";
 import { useCurrentUser } from "../providers/AuthProvider";
 import { Button } from "./Button";
-import { routes } from "../../../../app/electron/src/renderer/src/routes";
 import { UserAvatar } from "./UserAvatar";
+import { useApp } from "../providers/AppProvider";
 
 const LayoutContainer = styled("div", {
   position: "fixed",
@@ -41,6 +41,7 @@ const Logo = styled("div", {
 });
 
 export const Layout = ({ children }: { children: any }) => {
+  const { routes } = useApp();
   const { signOut, appUserData } = useCurrentUser();
   return (
     <LayoutContainer>
@@ -55,7 +56,7 @@ export const Layout = ({ children }: { children: any }) => {
             Welcome {appUserData?.displayName ?? "New User"}
             <UserAvatar height="24px" width="24px" />
           </Link>
-          <Button color="secondary" onClick={signOut}>
+          <Button disabled={true} color="secondary" onClick={signOut}>
             <img alt="logout" src="/icons/logout.svg" />
           </Button>
         </Col>

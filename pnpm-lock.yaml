@@ -214,6 +214,9 @@ importers:
       '@miguelludert/frontend-common':
         specifier: workspace:^
         version: link:../../lib/frontend-common
+      '@miguelludert/types-common':
+        specifier: workspace:^
+        version: link:../../lib/types-common
       '@stitches/react':
         specifier: ^1.2.8
         version: 1.2.8(react@18.3.1)
@@ -367,6 +370,9 @@ importers:
 
   lib/frontend-common:
     dependencies:
+      '@miguelludert/types-common':
+        specifier: workspace:^
+        version: link:../types-common
       '@stitches/react':
         specifier: ^1.2.8
         version: 1.2.8(react@18.3.1)
@@ -382,6 +388,9 @@ importers:
 
   lib/types-common:
     dependencies:
+      '@miguelludert/types-common':
+        specifier: workspace:^
+        version: 'link:'
       yup:
         specifier: ^1.5.0
         version: 1.5.0

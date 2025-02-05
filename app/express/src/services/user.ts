@@ -38,6 +38,7 @@ export const editUser = async (appUser: AppUser) => {
 };
 
 export const getUser = async (userId: string) => {
+  console.info(getUsersTableName(), userId);
   const [user] = await queryByKey<AppUser>(getUsersTableName(), {
     name: "userId",
     value: userId,
