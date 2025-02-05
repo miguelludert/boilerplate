@@ -5,6 +5,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { createFunction } from "../utils/create-function";
 import { NamingConventionProps } from "../types";
+import { outputs } from "../utils/output";
 
 export type UserStackProps = StackProps & NamingConventionProps;
 
@@ -59,5 +60,10 @@ export class UserStack extends Stack {
 
     this.userPoolId = userPool.userPoolId;
     this.userPoolClientId = userPoolClient.userPoolClientId;
+
+    outputs(this, namingConvention("output"), {
+      userPoolId: userPool.userPoolId,
+      userPoolClientId: userPoolClient.userPoolClientId,
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 export interface AuthProviderQueryFn {
@@ -63,7 +63,6 @@ export function AuthProvider({
   authQueryFn: AuthProviderQueryFn;
   children: React.ReactElement;
 }) {
-  const [user, setUser] = useState<AppUser | null>(null);
   const {
     handleGetAvatarMutationFn,
     handleGetUserDataQueryFn,
@@ -147,8 +146,6 @@ export function AuthProvider({
         reloadAvatar: () =>
           queryClient.invalidateQueries(["current-user", "avatar"]),
         async uploadAvatar({ file }: { file: File }) {
-          console.info(file);
-          console.info(file.path);
           await uploadAvatarAsync({
             file,
           });

@@ -14,6 +14,8 @@ import {
 import { join } from "path";
 import { existsSync } from "fs";
 import { UserStack } from "./user-stack";
+import { ExpressStack } from "./express-stack";
+import { outputs } from "../utils/output";
 
 export type FrontendStackProps = cdk.StackProps &
   NamingConventionProps &
@@ -22,6 +24,8 @@ export type FrontendStackProps = cdk.StackProps &
   };
 
 export class FrontendStack extends cdk.Stack {
+  functionUrl: string;
+
   constructor(scope: Construct, id: string, props: FrontendStackProps) {
     super(scope, id, props);
 
@@ -73,11 +77,10 @@ export class FrontendStack extends cdk.Stack {
       }
     );
 
-    new cdk.CfnOutput(this, namingConvention("output-bucketWebsiteUrl"), {
-      value: frontendBucket.bucketWebsiteUrl,
-    });
-    new cdk.CfnOutput(this, namingConvention("output-distributionDomainName"), {
-      value: distribution.domainName,
+    outputs(this, namingConvention("output"), {
+      bucketWebsiteUrl: frontendBucket.bucketWebsiteUrl,
+      distributionDomainName: distribution.domainName,
+      frontendApiUrl: this.getURLDomain(expressFunctionUrl),
     });
   }
 

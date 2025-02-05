@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { join } from "path";
+import { join, resolve } from "path";
+import * as dotenv from "dotenv";
+
 import { EcrRepositoriesStack } from "./stacks/ecr-stack";
 import { StorageStack } from "./stacks/storage-stack";
 import { UserStack } from "./stacks/user-stack";
@@ -9,10 +11,27 @@ import { ExpressStack } from "./stacks/express-stack";
 import { FrontendStack } from "./stacks/frontend-stack";
 import { loadLatestImageShas } from "./utils/get-image-sha";
 
+dotenv.config({ path: resolve(__dirname, "../../../.env") });
+
+function assertEnvVar(name: string): string {
+  const value = process.env[name];
+  if (!value || value.trim() === "") {
+    throw new Error(
+      `Environment variable ${name} is required but missing or empty.`
+    );
+  }
+  return value;
+}
+
 import("change-case").then(async ({ kebabCase }) => {
+  assertEnvVar("APP_NAME");
+  assertEnvVar("AWS_REGION");
+  assertEnvVar("STAGE");
+
   const { AWS_REGION: region } = process.env;
   const stage = process.env.STAGE || "dev";
-  const baseStackName = `ta2025-${stage}`;
+  const appName = process.env.APP_NAME;
+  const baseStackName = `${appName}-${stage}`;
   const namingConvention = (name: string) =>
     kebabCase(`${baseStackName}-${name}`);
   const baseProps = {
@@ -55,7 +74,7 @@ import("change-case").then(async ({ kebabCase }) => {
       buckets,
     }
   );
-  const frontendStack = new FrontendStack(
+  const { functionUrl } = new FrontendStack(
     app,
     namingConvention("frontend-stack"),
     {

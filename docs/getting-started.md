@@ -72,8 +72,8 @@ To configure the application, create a `.env` file in the root directory of your
 | `AWS_ACCESS_ID`        | The AWS access key ID for authentication.                                        | String  |
 | `AWS_ACCESS_SECRET`    | The AWS secret access key for authentication.                                    | String  |
 | `AWS_REGION`           | The AWS region where services are hosted.                                        | String  |
-| `FRONTEND_PORT`        | The port number for the frontend server.                                         | Integer |
-| `EXPRESS_PORT`         | The port number for the Express.js backend server.                               | Integer |
+| `LOCAL_FRONTEND_PORT`        | The port number for the frontend server.                                         | Integer |
+| `LOCAL_EXPRESS_PORT`         | The port number for the Express.js backend server.                               | Integer |
 | `HOSTNAME`             | The hostname for the application.                                                | String  |
 | `API_ENDPOINT`         | The URL endpoint for the API.                                                    | String  |
 | `S3_ENDPOINT`          | The endpoint URL for the S3-compatible storage service.                          | String  |

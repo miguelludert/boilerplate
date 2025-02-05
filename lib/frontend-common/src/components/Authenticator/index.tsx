@@ -1,6 +1,6 @@
-import React, { Children, useState } from "react";
+import React from "react";
 import { AuthComponent } from "./AuthComponent";
-import { AppUser, useCurrentUser } from "../../providers/AuthProvider";
+import { useCurrentUser } from "../../providers/AuthProvider";
 
 export interface AuthenticatorProps {
   children: any;

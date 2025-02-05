@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { SubmitHandler } from "react-hook-form";
 import { Form, Input } from "../";
 import { FormGroup, Label, Button, Alert } from "reactstrap";
 import { createStitches } from "@stitches/react";
