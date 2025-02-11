@@ -142,18 +142,6 @@ export interface AppUser {
    */
   saveUserData: (data: AppUserData) => Promise<void>;
 
-  /**
-   * Updates the user's email and/or password.
-   *
-   * @param args - An object containing the old password, and optionally new email and/or new password.
-   * @returns A promise that resolves when the operation is complete.
-   */
-  saveEmailAndPassword: (args: {
-    oldPassword: string;
-    email?: string;
-    newPassword?: string;
-  }) => Promise<void>;
-
   // Login-related functions
 
   /**
@@ -280,8 +268,9 @@ export function AuthProvider({
    *
    * This forces a refetch of user-related queries to ensure the latest data is used.
    */
-  const invalidateCurrentUser = () =>
+  const invalidateCurrentUser = () => {
     queryClient.invalidateQueries({ queryKey: ["current-user"], exact: false });
+  };
 
   // Fetch the current user's data using react-query.
   const { data: appUserData } = useQuery({
@@ -316,9 +305,6 @@ export function AuthProvider({
     mutationFn: handleSaveUserDataMutationFn,
     onSuccess: invalidateCurrentUser,
   });
-  const { mutateAsync: saveEmailAndPasswordAsync } = useMutation({
-    mutationFn: handleSaveEmailAndPasswordMutationFn,
-  });
   const { mutateAsync: uploadAvatarAsync } = useMutation({
     mutationFn: handleUploadAvatarMutationFn,
     onSuccess: invalidateCurrentUser,
@@ -330,7 +316,6 @@ export function AuthProvider({
       value={{
         appUserData,
         saveUserData: saveDataMutateAsync,
-        saveEmailAndPassword: saveEmailAndPasswordAsync,
         refetchUser: () =>
           queryClient.invalidateQueries(["current-user", "data"]),
 

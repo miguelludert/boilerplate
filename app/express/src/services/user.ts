@@ -6,18 +6,8 @@ import {
   resizeImage,
   sendMediaToResponse,
 } from "./media";
-import {
-  getCognitoClientId,
-  getCognitoUserPoolId,
-  getMediaBucketName,
-  getUsersTableName,
-} from "../constants";
-import { getObjectAsBuffer } from "../utils/s3";
-import { patchItem, putItem, queryByKey } from "../utils/dynamo";
-import {
-  updateCognitoUserEmailAndPassword,
-  verifyUserPassword,
-} from "../utils/cognito";
+import { getUsersTableName } from "../constants";
+import { putItem, queryByKey } from "../utils/dynamo";
 
 export interface AppUser {
   userId: string;
@@ -38,44 +28,11 @@ export const editUser = async (appUser: AppUser) => {
 };
 
 export const getUser = async (userId: string) => {
-  console.info(getUsersTableName(), userId);
   const [user] = await queryByKey<AppUser>(getUsersTableName(), {
     name: "userId",
     value: userId,
   });
   return user as AppUser;
-};
-
-export const updateUserEmailAndPassword = async (
-  userId: string,
-  oldPassword: string,
-  newPassword?: string,
-  newEmail?: string
-) => {
-  const verified = await verifyUserPassword({
-    userPoolId: getCognitoUserPoolId(),
-    clientId: getCognitoClientId(),
-    username: userId,
-    password: oldPassword,
-  });
-  if (!verified) {
-    throw Error("Not Authorized");
-  }
-  await updateCognitoUserEmailAndPassword({
-    userPoolId: getCognitoUserPoolId(),
-    username: userId,
-    newEmail,
-    newPassword,
-  });
-  if (newEmail) {
-    await patchItem(
-      getUsersTableName(),
-      { userId },
-      {
-        email: newEmail,
-      }
-    );
-  }
 };
 
 export const sendAvatarToResponse = async (userId: string, res: Response) => {

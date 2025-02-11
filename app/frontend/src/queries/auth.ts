@@ -112,20 +112,6 @@ export const handleSaveUserDataMutationFn = async (data: AppUserData) => {
   }
 };
 
-export const handleSaveEmailAndPasswordMutationFn = async ({
-  oldPassword,
-  email,
-  newPassword,
-}: {
-  oldPassword: string;
-  email?: string;
-  newPassword?: string;
-}) => {
-  if (oldPassword === newPassword) {
-    await axios.post(getApiEndpoint(`/user/security`), { email, newPassword });
-  }
-};
-
 export const handleForgotPassword = async ({ email }: { email: string }) => {
   try {
     await axios.post(getApiEndpoint(`/auth/forgotPassword`), { email });
@@ -142,7 +128,6 @@ export const authQueryFn: AuthProviderQueryFn = {
   handleGetUserDataQueryFn,
   handleCreateAccount,
   handleSaveUserDataMutationFn,
-  handleSaveEmailAndPasswordMutationFn,
   handleForgotPassword,
   handleUploadAvatarMutationFn,
   handleGetAvatarMutationFn,

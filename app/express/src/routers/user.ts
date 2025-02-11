@@ -21,7 +21,6 @@ userRouter.use((req: Request, res: Response, next: NextFunction) => {
   appRequest.user = {
     id: "local-user",
     sub: "local-user",
-    email: process.env.LOCAL_USER_EMAIL!,
   };
   next();
 });
@@ -29,7 +28,7 @@ userRouter.use((req: Request, res: Response, next: NextFunction) => {
 // get current user
 userRouter.get("/", async (req: AppRequest, res: any) => {
   const user = await getUser(req.user.sub);
-  res.json({ ...user, email: req.user.email });
+  res.json({ ...user });
 });
 
 // edit current user
@@ -38,11 +37,6 @@ userRouter.post("/", async (req: AppRequest, res: any) => {
   const userId = req.user.sub;
   await editUser({ ...body, userId });
   res.json("OK");
-});
-
-// edit current user
-userRouter.post("/security", async (req: AppRequest, res: any) => {
-  res.sendStatus(501);
 });
 
 // get current user's avatar

@@ -14,14 +14,13 @@ export interface ProfileViewProps {
   setCurrentView: (view: ProfileViews) => void;
 }
 
-export type ProfileViews = "default" | "edit" | "passwordProtected";
+export type ProfileViews = "default" | "edit";
 
 export const ProfilePage = () => {
   const [currentView, setCurrentView] = useState<ProfileViews>("default");
   const CurrentView = {
     default: ProfileDisplay,
     edit: ProfileEdit,
-    passwordProtected: ProfileEmailPassword,
   }[currentView];
   return (
     <Layout>
@@ -70,18 +69,7 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
           <Button className="m-2" onClick={handleButtonClick}>
             Change Avatar
           </Button>
-          <Button
-            disabled={true}
-            className="m-2"
-            onClick={() => setCurrentView("passwordProtected")}
-          >
-            Change Email & Password
-          </Button>
-          <Button
-            disabled={true}
-            className="m-2"
-            onClick={() => setCurrentView("edit")}
-          >
+          <Button className="m-2" onClick={() => setCurrentView("edit")}>
             Edit Profile
           </Button>
         </div>
@@ -119,7 +107,6 @@ export function ProfileDisplay({ setCurrentView }: ProfileViewProps) {
 export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
   const { appUserData, saveUserData } = useCurrentUser();
   const onSubmit = async (data: AppUserData) => {
-    console.info("is this correct", data);
     await saveUserData(data);
     setCurrentView("default");
   };
@@ -127,6 +114,14 @@ export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
   return (
     <Form onSubmit={onSubmit} defaultValues={appUserData}>
       <h1>Edit Profile</h1>
+      <Row xs={12} lg={6}>
+        <Col xs={12} md={6}>
+          Email Address:
+        </Col>
+        <Col xs={12} md={6}>
+          <Input name="email" type="text" placeholder="Email Address" />
+        </Col>
+      </Row>
       <Row xs={12} lg={6}>
         <Col xs={12} md={6}>
           First name:
@@ -145,67 +140,6 @@ export function ProfileEdit({ setCurrentView }: ProfileViewProps) {
       </Row>
       <Row xs={12} md={6}>
         <Button type="submit">Save Profile</Button>
-        <Button
-          type="button"
-          onClick={() => setCurrentView("default")}
-          color="danger"
-        >
-          Cancel
-        </Button>
-      </Row>
-    </Form>
-  );
-}
-
-export function ProfileEmailPassword({ setCurrentView }: ProfileViewProps) {
-  const { saveEmailAndPassword } = useCurrentUser();
-  const onSubmit = async (data: {
-    oldPassword: string;
-    email?: string;
-    newPassword?: string;
-  }) => {
-    console.info("is this correct", data);
-    await saveEmailAndPassword(data);
-    setCurrentView("default");
-  };
-
-  return (
-    <Form onSubmit={onSubmit}>
-      <h1>Edit Email Address and Password</h1>
-      <Row xs={12} lg={6}>
-        <Col xs={12} md={6}>
-          Current Password:
-        </Col>
-        <Col xs={12} md={6}>
-          <Input
-            name="oldPassword"
-            type="text"
-            placeholder="Current Password"
-          />
-        </Col>
-      </Row>
-      <Row xs={12} lg={6}>
-        <Col xs={12} md={6}>
-          New Email Address:
-        </Col>
-        <Col xs={12} md={6}>
-          <Input
-            name="newEmailAddress"
-            type="text"
-            placeholder="New Email Address"
-          />
-        </Col>
-      </Row>
-      <Row xs={12} lg={6}>
-        <Col xs={12} md={6}>
-          New Password:
-        </Col>
-        <Col xs={12} md={6}>
-          <Input name="newPassword" type="text" placeholder="New Password" />
-        </Col>
-      </Row>
-      <Row xs={12} md={6}>
-        <Button type="submit">Save Email and Password</Button>
         <Button
           type="button"
           onClick={() => setCurrentView("default")}

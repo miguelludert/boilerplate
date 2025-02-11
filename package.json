@@ -4,7 +4,8 @@
     "scripts": {
         "start": "pnpm -r --filter './app/**' start",
         "start-frontent": "pnpm -r --filter './app/frontend' start",
-        "start-backend": "pnpm -r --filter './app/backend' start"
+        "bootstrap": "(cd cli && sh bootstrap.sh)",
+        "dynamodb-admin": "npx dynamodb-admin"
     },
     "dependencies": {
         "eslint": "^9.13.0",
